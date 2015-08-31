@@ -1,6 +1,7 @@
 package com.ibluetag.indoor;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.*;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
@@ -94,9 +95,11 @@ public class DemoIndoorActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (isNetworkAvailable(true)) {
-            reloadMap();
+        if (!isNetworkAvailable(true)) {
+            Log.w(TAG, "network not available...");
         }
+        // always reload since we support downloading offline map
+        reloadMap();
     }
 
     private void reloadMap() {
@@ -321,6 +324,17 @@ public class DemoIndoorActivity extends Activity {
                         R.string.toast_map_load_poi_label_not_found,
                         Toast.LENGTH_SHORT).show();
             }
+
+            @Override
+            public void onMapDownloaded(boolean success, long subjectId) {
+                String message;
+                if (success) {
+                    message = getString(R.string.toast_map_download_success, subjectId);
+                } else {
+                    message = getString(R.string.toast_map_download_failure, subjectId);
+                }
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            }
         });
 
         // 设置建筑物切换监听
@@ -496,6 +510,46 @@ public class DemoIndoorActivity extends Activity {
                 mBitmapOverlay1.detach();
                 mBitmapOverlay2.detach();
                 mIndoorMap.getMapProxy().removeInfoWindow();
+                return true;
+            case R.id.action_download_map:
+                if (!isNetworkAvailable(true)) {
+                    return true;
+                }
+                View downloadMapDialogLayout = getLayoutInflater().inflate(
+                        R.layout.dialog_download_map, null);
+                final EditText inputSubjectIdEdit = (EditText) downloadMapDialogLayout.findViewById(
+                        R.id.subject_id_edit);
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.map_download_dialog_title)
+                        .setView(downloadMapDialogLayout)
+                        .setPositiveButton(R.string.btn_confirm,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String inputSubjectId =
+                                                inputSubjectIdEdit.getText().toString().trim();
+                                        if (inputSubjectId != null && !inputSubjectId.isEmpty()) {
+                                            Toast.makeText(getApplicationContext(),
+                                                    getString(R.string.toast_map_download_start,
+                                                            inputSubjectId),
+                                                    Toast.LENGTH_SHORT).show();
+                                            mIndoorMap.getMapProxy().downloadMap(
+                                                    Integer.parseInt(inputSubjectId));
+                                            dialog.dismiss();
+                                        } else {
+                                            Toast.makeText(getApplicationContext(),
+                                                    R.string.toast_input_empty,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                })
+                        .setNegativeButton(R.string.btn_cancel,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                }).show();
                 return true;
             default:
                 break;

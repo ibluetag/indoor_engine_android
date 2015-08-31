@@ -9,6 +9,9 @@
     <string name="info_detail">查看详情</string>
     <string name="progress_loading">加载中...</string>
     <string name="toast_map_load_poi_label_not_found">未在指定楼层找到相应POI标签</string>
+    <string name="toast_map_download_start">主体#%1$s离线地图开始下载！</string>
+    <string name="toast_map_download_success">主体#%1$s离线地图下载成功！</string>
+    <string name="toast_map_download_failure">主体#%1$s离线地图下载失败！</string>
     <string name="toast_map_search_success">地图中找到%1$s处相关内容！</string>
     <string name="toast_map_search_failure">地图中未能找到相关内容！</string>
     <string name="toast_settings_invalid">地图配置参数无效！</string>
@@ -16,12 +19,16 @@
     <string name="toast_route_out_of_path">您已偏离导航，线路重新规划中...</string>
     <string name="toast_bluetooth_invalid">设备不支持蓝牙！</string>
     <string name="toast_network_unavailable">当前网络不可用，请检查网络设置</string>
+    <string name="toast_input_empty">输入为空！</string>
     <string name="beacon_enable_bluetooth_title">开启蓝牙</string>
     <string name="beacon_enable_bluetooth_message">Beacon发现需开启蓝牙设备，是否开启？</string>
+    <string name="map_download_dialog_title">离线地图下载</string>
+    <string name="map_download_dialog_label">请输入地图主体id: </string>
 
     <string name="action_settings">地图配置</string>
     <string name="action_add_overlay">添加覆盖物</string>
     <string name="action_remove_overlay">移除覆盖物</string>
+    <string name="action_download_map">下载离线地图</string>
 
     <string name="key_map_server">indoor_map_server</string>
     <string name="key_map_subject_id">indoor_map_subject_id</string>
