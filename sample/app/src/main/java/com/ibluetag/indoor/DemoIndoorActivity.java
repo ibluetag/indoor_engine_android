@@ -149,12 +149,37 @@ public class DemoIndoorActivity extends Activity {
         mIndoorMap.getMapProxy().enableSmoothRoute(
                 sp.getBoolean(getString(R.string.key_smooth_route), false));
 
-        Log.v(TAG, "reloadMap, map server: " + mMapServerUrl + ", id: " + mMapSubjectId);
+        String loadMode = sp.getString(getString(R.string.key_map_load_mode),
+                getString(R.string.default_map_load_mode));
+        String initialFloorId = sp.getString(getString(R.string.key_map_load_initial_floor_id),
+                getString(R.string.default_map_load_initial_floor_id));
+        String initialLabel = sp.getString(getString(R.string.key_map_load_initial_label),
+                getString(R.string.default_map_load_initial_label));
+
+        Log.v(TAG, "reloadMap, map server: " + mMapServerUrl +
+                ", id: " + mMapSubjectId +
+                ", mode: " + loadMode +
+                ", initial floor: " + initialFloorId +
+                ", initial label: " + initialLabel);
         mIsToastNotInBuildingRequired = true;
         // 设置地图服务器
         mIndoorMap.getMapProxy().initServer(mMapServerUrl);
-        // 通过地图主体（可能是商场/机构/场所等）唯一标识符加载地图
-        mIndoorMap.getMapProxy().load(mMapSubjectId);
+        if (loadMode.equals(getString(R.string.value_map_load_mode_subject))) {
+            // 通过地图主体ID加载
+            mIndoorMap.getMapProxy().load(mMapSubjectId);
+        } else if (loadMode.equals(getString(R.string.value_map_load_mode_floor))) {
+            // 通过地图主体ID及楼层ID加载
+            mIndoorMap.getMapProxy().loadMapWithFloor(mMapSubjectId, Long.valueOf(initialFloorId));
+        } else if (loadMode.equals(getString(R.string.value_map_load_mode_booth_select))) {
+            // 通过地图主体ID，楼层ID及POI标签加载，加载后选中POI
+            mIndoorMap.getMapProxy().loadMapWithPoiSelected(
+                    mMapSubjectId, Long.valueOf(initialFloorId), initialLabel);
+        } else if (loadMode.equals(getString(R.string.value_map_load_mode_booth_route))) {
+            // 通过地图主体ID，楼层ID及POI标签加载，加载后导航至POI
+            mIndoorMap.getMapProxy().loadMapWithPoiRouting(
+                    mMapSubjectId, Long.valueOf(initialFloorId), initialLabel);
+        }
+
     }
 
     private void setupTitleBar() {
@@ -256,6 +281,20 @@ public class DemoIndoorActivity extends Activity {
     private void setupIndoorMap() {
         mLocateAgent.registerListener(mPushListener);
         mIndoorMap = (IndoorMapView) findViewById(R.id.indoor_map);
+        // 设置地图加载监听
+        mIndoorMap.getMapProxy().setMapListener(new MapProxy.MapListener() {
+            @Override
+            public void onMapLoaded(boolean success) {
+            }
+
+            @Override
+            public void onMapLoadPoiLabelNotFound() {
+                Toast.makeText(getApplicationContext(),
+                        R.string.toast_map_load_poi_label_not_found,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // 设置建筑物切换监听
         mIndoorMap.getMapProxy().setBuildingListener(new MapProxy.BuildingListener() {
             @Override

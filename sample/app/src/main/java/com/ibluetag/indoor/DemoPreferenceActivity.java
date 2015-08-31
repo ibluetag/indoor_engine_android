@@ -16,6 +16,9 @@ public class DemoPreferenceActivity extends PreferenceActivity
 
     private EditTextPreference mMapServerEdit;
     private EditTextPreference mMapSubjectIdEdit;
+    private ListPreference mMapLoadModeList;
+    private EditTextPreference mMapLoadFloorIdEdit;
+    private EditTextPreference mMapLoadInitialLabelEdit;
     private EditTextPreference mLocateTargetEdit;
     private CheckBoxPreference mLocateWithPhoneCheck;
     private EditTextPreference mLocateWifiScanIntervalEdit;
@@ -53,6 +56,24 @@ public class DemoPreferenceActivity extends PreferenceActivity
                 getString(R.string.key_map_subject_id));
         mMapSubjectIdEdit.setSummary(mMapSubjectIdEdit.getText());
         mMapSubjectIdEdit.setOnPreferenceChangeListener(this);
+        mMapLoadModeList = (ListPreference) findPreference(getString(R.string.key_map_load_mode));
+        mMapLoadModeList.setSummary(mMapLoadModeList.getEntry());
+        mMapLoadModeList.setOnPreferenceChangeListener(this);
+        mMapLoadFloorIdEdit = (EditTextPreference) findPreference(
+                getString(R.string.key_map_load_initial_floor_id));
+        mMapLoadFloorIdEdit.setSummary(mMapLoadFloorIdEdit.getText());
+        mMapLoadFloorIdEdit.setOnPreferenceChangeListener(this);
+        mMapLoadFloorIdEdit.setEnabled(mMapLoadModeList.getValue().equals(
+                getString(R.string.value_map_load_mode_subject)) == false);
+        mMapLoadInitialLabelEdit = (EditTextPreference) findPreference(
+                getString(R.string.key_map_load_initial_label));
+        mMapLoadInitialLabelEdit.setSummary(mMapLoadInitialLabelEdit.getText());
+        mMapLoadInitialLabelEdit.setOnPreferenceChangeListener(this);
+        mMapLoadInitialLabelEdit.setEnabled(
+                mMapLoadModeList.getValue().equals(
+                getString(R.string.value_map_load_mode_booth_select)) ||
+                mMapLoadModeList.getValue().equals(
+                getString(R.string.value_map_load_mode_booth_route)));
 
         // wifi
         mLocateTargetEdit = (EditTextPreference) findPreference(
@@ -119,6 +140,19 @@ public class DemoPreferenceActivity extends PreferenceActivity
             mClearCacheCheck.setChecked(!mLastMapServer.equalsIgnoreCase((String) newValue));
         } else if (preference.getKey().equals(getString(R.string.key_map_subject_id))) {
             mMapSubjectIdEdit.setSummary((CharSequence) newValue);
+        } else if (preference.getKey().equals(getString(R.string.key_map_load_mode))) {
+            String loadMode = (String) newValue;
+            mMapLoadModeList.setSummary(mMapLoadModeList.getEntries()[
+                    mMapLoadModeList.findIndexOfValue(loadMode)]);
+            mMapLoadFloorIdEdit.setEnabled(loadMode.equals(
+                    getString(R.string.value_map_load_mode_subject)) == false);
+            mMapLoadInitialLabelEdit.setEnabled(
+                    loadMode.equals(getString(R.string.value_map_load_mode_booth_select)) ||
+                    loadMode.equals(getString(R.string.value_map_load_mode_booth_route)));
+        } else if (preference.getKey().equals(getString(R.string.key_map_load_initial_floor_id))) {
+            mMapLoadFloorIdEdit.setSummary((CharSequence) newValue);
+        } else if (preference.getKey().equals(getString(R.string.key_map_load_initial_label))) {
+            mMapLoadInitialLabelEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_locate_target))) {
             mLocateTargetEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_locate_with_phone))) {

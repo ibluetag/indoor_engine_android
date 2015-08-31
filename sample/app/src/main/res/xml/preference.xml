@@ -20,6 +20,31 @@
                             android:dialogIcon="@drawable/ic_map_settings"
                             android:positiveButtonText="@string/btn_confirm"
                             android:negativeButtonText="@string/btn_cancel"/>
+
+        <ListPreference android:title="@string/pref_map_load_mode"
+                        android:key="@string/key_map_load_mode"
+                        android:defaultValue="@string/default_map_load_mode"
+                        android:dialogTitle="@string/pref_map_load_mode"
+                        android:dialogIcon="@drawable/ic_map_settings"
+                        android:entries="@array/map_load_mode_entries"
+                        android:entryValues="@array/map_load_mode_values"/>
+
+        <EditTextPreference android:title="@string/pref_map_load_initial_floor_id"
+                            android:key="@string/key_map_load_initial_floor_id"
+                            android:numeric="integer"
+                            android:defaultValue="@string/default_map_load_initial_floor_id"
+                            android:dialogTitle="@string/pref_map_load_initial_floor_id"
+                            android:dialogIcon="@drawable/ic_map_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <EditTextPreference android:title="@string/pref_map_load_initial_label"
+                            android:key="@string/key_map_load_initial_label"
+                            android:defaultValue="@string/default_map_load_initial_label"
+                            android:dialogTitle="@string/pref_map_load_initial_label"
+                            android:dialogIcon="@drawable/ic_map_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_locate_title"

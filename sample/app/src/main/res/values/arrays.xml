@@ -11,4 +11,18 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+
+    <string-array name="map_load_mode_entries">
+        <item>加载主体ID（默认楼层）</item>
+        <item>加载指定楼层</item>
+        <item>加载后选中指定店铺</item>
+        <item>加载后导航至指定店铺</item>
+    </string-array>
+
+    <string-array name="map_load_mode_values">
+        <item>@string/value_map_load_mode_subject</item>
+        <item>@string/value_map_load_mode_floor</item>
+        <item>@string/value_map_load_mode_booth_select</item>
+        <item>@string/value_map_load_mode_booth_route</item>
+    </string-array>
 </resources>

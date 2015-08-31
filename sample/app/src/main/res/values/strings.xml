@@ -8,6 +8,7 @@
     <string name="info_title">信息提示</string>
     <string name="info_detail">查看详情</string>
     <string name="progress_loading">加载中...</string>
+    <string name="toast_map_load_poi_label_not_found">未在指定楼层找到相应POI标签</string>
     <string name="toast_map_search_success">地图中找到%1$s处相关内容！</string>
     <string name="toast_map_search_failure">地图中未能找到相关内容！</string>
     <string name="toast_settings_invalid">地图配置参数无效！</string>
@@ -24,6 +25,9 @@
 
     <string name="key_map_server">indoor_map_server</string>
     <string name="key_map_subject_id">indoor_map_subject_id</string>
+    <string name="key_map_load_mode">indoor_map_load_mode</string>
+    <string name="key_map_load_initial_floor_id">indoor_map_load_floor_id</string>
+    <string name="key_map_load_initial_label">indoor_map_load_initial_label</string>
     <string name="key_locate_server">indoor_locate_server</string>
     <string name="key_locate_target">indoor_locate_target</string>
     <string name="key_locate_with_phone">indoor_locate_with_phone</string>
@@ -40,8 +44,16 @@
     <string name="key_smooth_route">indoor_smooth_route</string>
     <string name="key_clear_cache">indoor_clear_cache</string>
 
+    <string name="value_map_load_mode_subject">subject</string>
+    <string name="value_map_load_mode_floor">floor</string>
+    <string name="value_map_load_mode_booth_select">select</string>
+    <string name="value_map_load_mode_booth_route">route</string>
+
     <string name="default_map_server">http://a.imapview.com</string>
     <string name="default_map_subject_id">1</string>
+    <string name="default_map_load_mode">@string/value_map_load_mode_subject</string>
+    <string name="default_map_load_initial_floor_id">10</string>
+    <string name="default_map_load_initial_label">NC8032</string>
     <string name="default_locate_server">http://www.uradiosys.com:8065</string>
     <string name="default_locate_target">B0:8E:1A:50:3D:61</string>
     <string name="default_locate_wifi_scan_interval">1000</string>
@@ -56,6 +68,9 @@
     <string name="pref_map_title">地图设置</string>
     <string name="pref_map_server">地图服务器</string>
     <string name="pref_map_subject_id">地图主体ID</string>
+    <string name="pref_map_load_mode">地图加载模式</string>
+    <string name="pref_map_load_initial_floor_id">指定楼层ID</string>
+    <string name="pref_map_load_initial_label">指定POI(店铺/展台)标签</string>
     <string name="pref_locate_title">定位设置</string>
     <string name="pref_locate_server">备用定位服务器（后台未配置时）</string>
     <string name="pref_locate_target">定位目标MAC</string>
