@@ -28,9 +28,7 @@ import com.ibluetag.sdk.api.BeaconListener;
 import com.ibluetag.sdk.model.SimpleBeacon;
 import com.squareup.picasso.Picasso;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class DemoIndoorActivity extends Activity {
     private static final String TAG = "DemoIndoorActivity";
@@ -43,6 +41,10 @@ public class DemoIndoorActivity extends Activity {
     private ImageButton mSearchInputClearBtn;
     private Button mSearchCancelBtn;
 
+    private View mAreaLayout;
+    private Map<Area, Button> mAreaBtns = new HashMap<Area, Button>();
+    private Area mCurArea = Area.ALL;
+
     private View mInfoLayout;
     private ImageButton mInfoCloseBtn;
     private TextView mInfoMessage;
@@ -51,7 +53,7 @@ public class DemoIndoorActivity extends Activity {
 
     private IndoorMapView mIndoorMap;
     private Building mCurrentBuilding;
-    private long mCurrentFloorId = 1;
+    private long mCurrentFloorId = -1;
     private BitmapOverlay mBitmapOverlay1;
     private BitmapOverlay mBitmapOverlay2;
     private DemoLocateAgent mLocateAgent = new DemoLocateAgent();
@@ -66,6 +68,12 @@ public class DemoIndoorActivity extends Activity {
     private BeaconAPI mBeaconAPI;
     private int mBeaconInterval = -1;
     private boolean mIsToastNotInBuildingRequired = true;
+    private String mCurrentLoadMode;
+    private long mInitialFloorId = -1;
+
+    enum Area {
+        SOUTH, NORTH, ALL,
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -73,6 +81,7 @@ public class DemoIndoorActivity extends Activity {
         setContentView(R.layout.activity_indoor_map);
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         setupTitleBar();
+        setupAreaBar();
         setupInfoBar();
         setupIndoorMap();
         setupOverlay();
@@ -149,17 +158,18 @@ public class DemoIndoorActivity extends Activity {
         mIndoorMap.getMapProxy().enableSmoothRoute(
                 sp.getBoolean(getString(R.string.key_smooth_route), false));
 
-        String loadMode = sp.getString(getString(R.string.key_map_load_mode),
+        mCurrentLoadMode = sp.getString(getString(R.string.key_map_load_mode),
                 getString(R.string.default_map_load_mode));
-        String initialFloorId = sp.getString(getString(R.string.key_map_load_initial_floor_id),
-                getString(R.string.default_map_load_initial_floor_id));
+        mInitialFloorId = Long.valueOf(
+                sp.getString(getString(R.string.key_map_load_initial_floor_id),
+                getString(R.string.default_map_load_initial_floor_id)));
         String initialLabel = sp.getString(getString(R.string.key_map_load_initial_label),
                 getString(R.string.default_map_load_initial_label));
 
         Log.v(TAG, "reloadMap, map server: " + mMapServerUrl +
                 ", id: " + mMapSubjectId +
-                ", mode: " + loadMode +
-                ", initial floor: " + initialFloorId +
+                ", mode: " + mCurrentLoadMode +
+                ", initial floor: " + mInitialFloorId +
                 ", initial label: " + initialLabel);
         mIsToastNotInBuildingRequired = true;
         // 设置地图服务器
@@ -195,20 +205,20 @@ public class DemoIndoorActivity extends Activity {
             }
         });
 
-        if (loadMode.equals(getString(R.string.value_map_load_mode_subject))) {
+        if (mCurrentLoadMode.equals(getString(R.string.value_map_load_mode_subject))) {
             // 通过地图主体ID加载
             mIndoorMap.getMapProxy().load(mMapSubjectId);
-        } else if (loadMode.equals(getString(R.string.value_map_load_mode_floor))) {
+        } else if (mCurrentLoadMode.equals(getString(R.string.value_map_load_mode_floor))) {
             // 通过地图主体ID及楼层ID加载
-            mIndoorMap.getMapProxy().loadMapWithFloor(mMapSubjectId, Long.valueOf(initialFloorId));
-        } else if (loadMode.equals(getString(R.string.value_map_load_mode_booth_select))) {
+            mIndoorMap.getMapProxy().loadMapWithFloor(mMapSubjectId, mInitialFloorId);
+        } else if (mCurrentLoadMode.equals(getString(R.string.value_map_load_mode_booth_select))) {
             // 通过地图主体ID，楼层ID及POI标签加载，加载后选中POI
             mIndoorMap.getMapProxy().loadMapWithPoiSelected(
-                    mMapSubjectId, Long.valueOf(initialFloorId), initialLabel);
-        } else if (loadMode.equals(getString(R.string.value_map_load_mode_booth_route))) {
+                    mMapSubjectId, mInitialFloorId, initialLabel);
+        } else if (mCurrentLoadMode.equals(getString(R.string.value_map_load_mode_booth_route))) {
             // 通过地图主体ID，楼层ID及POI标签加载，加载后导航至POI
             mIndoorMap.getMapProxy().loadMapWithPoiRouting(
-                    mMapSubjectId, Long.valueOf(initialFloorId), initialLabel);
+                    mMapSubjectId, mInitialFloorId, initialLabel);
         }
 
     }
@@ -351,7 +361,16 @@ public class DemoIndoorActivity extends Activity {
         mIndoorMap.getMapProxy().setFloorListener(new MapProxy.FloorListener() {
             @Override
             public void onFloorSwitch(long floorId) {
+                if (mCurrentFloorId == floorId) {
+                    return;
+                }
                 mCurrentFloorId = floorId;
+                Floor curFloor = mIndoorMap.getMapProxy().getCurrentFloorInfo();
+                Log.v(TAG, "floor: " + curFloor.toString() +
+                        ", proportion: " + mIndoorMap.getMapProxy().getProportion() +
+                        ", w=" + mIndoorMap.getMapProxy().getWidth() +
+                        ", h=" + mIndoorMap.getMapProxy().getHeight());
+                checkAreaDisplay(curFloor);
                 String locateServer = mIndoorMap.getMapProxy().getLocateServer(floorId);
                 Log.v(TAG, "locateServer: " + locateServer);
                 if (locateServer != null && !locateServer.isEmpty()) {
@@ -378,8 +397,6 @@ public class DemoIndoorActivity extends Activity {
                             Integer.parseInt(sp.getString(getString(R.string.key_locate_beacon_port),
                             getString(R.string.default_locate_beacon_port))));
                 }
-                Log.v(TAG, "floor: " + floorId +
-                        ", proportion: " + mIndoorMap.getMapProxy().getProportion());
             }
         });
         // 设置导航监听
@@ -407,6 +424,89 @@ public class DemoIndoorActivity extends Activity {
         });
         // 设置定位代理
         mIndoorMap.getMapProxy().setLocateAgent(mLocateAgent);
+    }
+
+    private void setupAreaBar() {
+        mAreaLayout = findViewById(R.id.area_layout);
+        mAreaBtns.put(Area.SOUTH, (Button) findViewById(R.id.area_south));
+        mAreaBtns.put(Area.NORTH, (Button) findViewById(R.id.area_north));
+        mAreaBtns.put(Area.ALL, (Button) findViewById(R.id.area_all));
+        for (final Area area : mAreaBtns.keySet()) {
+            final Area clickedArea = area;
+            mAreaBtns.get(area).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onAreaSelected(clickedArea, true);
+                }
+            });
+        }
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        int savedOrdinal = sp.getInt(getString(R.string.key_initial_area), Area.ALL.ordinal());
+        onAreaSelected(Area.values()[savedOrdinal], false);
+    }
+
+    private void onAreaSelected(Area selectedArea, boolean needSave) {
+        for (Area area : mAreaBtns.keySet()) {
+            mAreaBtns.get(area).setSelected(area == selectedArea);
+        }
+        mCurArea = selectedArea;
+        updateAreaDisplay();
+        if (needSave) {
+            SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(
+                    getApplicationContext()).edit();
+            edit.putInt(getString(R.string.key_initial_area), mCurArea.ordinal());
+            edit.commit();
+        }
+    }
+
+    private void checkAreaDisplay(Floor floor) {
+        if (floor == null) {
+            return;
+        }
+        if (floor.hasMultiAreas(mIndoorMap.getMapProxy().getWidth(),
+                mIndoorMap.getMapProxy().getHeight())) {
+            mAreaLayout.setVisibility(View.VISIBLE);
+            if (mCurrentLoadMode == null || (
+                    !mCurrentLoadMode.equals(
+                    getString(R.string.value_map_load_mode_booth_select)) &&
+                    !mCurrentLoadMode.equals(
+                    getString(R.string.value_map_load_mode_booth_route)))) {
+                // POI selected or route mode: highlighted as default
+                updateAreaDisplay();
+                return;
+            }
+        } else {
+            mAreaLayout.setVisibility(View.GONE);
+        }
+        if (floor.getId() == mInitialFloorId) {
+            // now ok to forget load mode, show areas for next floor switch if necessary
+            // load mode will be set at reload map
+            mCurrentLoadMode = null;
+            mInitialFloorId = -1;
+        }
+    }
+
+    private void updateAreaDisplay() {
+        if (mIndoorMap == null) {
+            return;
+        }
+        switch (mCurArea) {
+            case SOUTH:
+                // move to south center, scale by 2x, rotate by 0
+                mIndoorMap.getMapProxy().layoutBy(510.0f, 910.0f, 2.0f, 0.0f);
+                break;
+            case NORTH:
+                // move to north center, scale by 2x, rotate by 0
+                mIndoorMap.getMapProxy().layoutBy(1670.0f, 360.0f, 2.0f, 0.0f);
+                break;
+            case ALL:
+                // move to floor center, scale by 1x, rotate by original angle
+                mIndoorMap.getMapProxy().layoutBy(1080.0f, 640.0f, 1.0f,
+                        -mIndoorMap.getMapProxy().getOriginalAngle());
+                break;
+            default:
+                break;
+        }
     }
 
     private void setupOverlay() {

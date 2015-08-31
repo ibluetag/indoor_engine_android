@@ -16,6 +16,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
+        <RelativeLayout android:id="@+id/area_layout"
+                        android:visibility="gone"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+            <LinearLayout android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_alignParentTop="true"
+                          android:layout_centerHorizontal="true"
+                          android:layout_margin="4dp">
+
+                <Button android:id="@+id/area_south"
+                        android:layout_width="72dp"
+                        android:layout_height="36dp"
+                        android:layout_margin="1dp"
+                        android:text="@string/area_south"
+                        android:background="@drawable/btn_gray_selector"
+                        android:textSize="18sp"
+                        android:textColor="#000000"/>
+
+                <Button android:id="@+id/area_all"
+                        android:layout_width="72dp"
+                        android:layout_height="36dp"
+                        android:layout_margin="1dp"
+                        android:text="@string/area_all"
+                        android:background="@drawable/btn_gray_selector"
+                        android:textSize="18sp"
+                        android:textColor="#000000"/>
+
+                <Button android:id="@+id/area_north"
+                        android:layout_width="72dp"
+                        android:layout_height="36dp"
+                        android:layout_margin="1dp"
+                        android:text="@string/area_north"
+                        android:background="@drawable/btn_gray_selector"
+                        android:textSize="18sp"
+                        android:textColor="#000000"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
         <RelativeLayout android:id="@+id/info_layout"
                         android:visibility="gone"
                         android:layout_width="match_parent"

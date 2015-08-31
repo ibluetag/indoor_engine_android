@@ -7,6 +7,9 @@
     <string name="info_window_btn_text">点击隐藏</string>
     <string name="info_title">信息提示</string>
     <string name="info_detail">查看详情</string>
+    <string name="area_south">南馆</string>
+    <string name="area_north">北馆</string>
+    <string name="area_all">全馆</string>
     <string name="progress_loading">加载中...</string>
     <string name="toast_map_load_poi_label_not_found">未在指定楼层找到相应POI标签</string>
     <string name="toast_map_download_start">主体#%1$s离线地图开始下载！</string>
@@ -30,6 +33,7 @@
     <string name="action_remove_overlay">移除覆盖物</string>
     <string name="action_download_map">下载离线地图</string>
 
+    <string name="key_initial_area">indoor_initial_area</string>
     <string name="key_map_server">indoor_map_server</string>
     <string name="key_map_subject_id">indoor_map_subject_id</string>
     <string name="key_map_load_mode">indoor_map_load_mode</string>

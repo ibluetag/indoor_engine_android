@@ -121,7 +121,7 @@ public class DemoLocateAgent extends LocateAgent {
                             LocationListener.LOCATE_UNKNOWN_ERROR, null);
                     return;
                 }
-                if (tagStatus.getMapId() < 0) {
+                if (tagStatus.getMapId() <= 0) {
                     Log.w(TAG, "floor id invalid: " + tagStatus);
                     notifyLocation(force ? LocationListener.LOCATE_FORCE_FAILURE :
                             LocationListener.LOCATE_UNKNOWN_ERROR, null);
