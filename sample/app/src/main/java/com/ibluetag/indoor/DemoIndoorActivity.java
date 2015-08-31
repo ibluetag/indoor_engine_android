@@ -18,12 +18,9 @@ import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
-import com.ibluetag.indoor.sdk.model.BitmapOverlay;
-import com.ibluetag.indoor.sdk.model.Building;
+import com.ibluetag.indoor.sdk.model.*;
 import com.ibluetag.indoor.sdk.IndoorMapView;
 import com.ibluetag.indoor.sdk.MapProxy;
-import com.ibluetag.indoor.sdk.model.InfoWindow;
-import com.ibluetag.indoor.sdk.model.RouteInfo;
 import com.ibluetag.loc.uradiosys.model.AreaInfo;
 import com.ibluetag.sdk.api.BeaconAPI;
 import com.ibluetag.sdk.api.BeaconListener;
@@ -164,6 +161,37 @@ public class DemoIndoorActivity extends Activity {
         mIsToastNotInBuildingRequired = true;
         // 设置地图服务器
         mIndoorMap.getMapProxy().initServer(mMapServerUrl);
+
+        // 异步获取所有楼层信息
+        mIndoorMap.getMapProxy().getAllFloors(mMapSubjectId, new MapProxy.FloorInfoCallback() {
+            @Override
+            public void onFloors(List<Floor> floors) {
+                if (floors != null) {
+                    Log.v(TAG, "total " + floors.size() + " floors.");
+                    for (Floor floor : floors) {
+                        Log.v(TAG, floor.toString());
+                    }
+                }
+            }
+        });
+
+        // 异步获取所有POI信息
+        mIndoorMap.getMapProxy().getAllPois(mMapSubjectId, new MapProxy.PoiInfoCallback() {
+            @Override
+            public void onPois(List<POI> pois) {
+                if (pois != null) {
+                    Log.v(TAG, "total " + pois.size() + " pois.");
+                    int dumpCount = pois.size() < 5 ? pois.size() : 5;
+                    for (int i = 0; i < dumpCount; i++) {
+                        Log.v(TAG, pois.get(i).toString());
+                    }
+                    if (dumpCount < pois.size()) {
+                        Log.v(TAG, "...");
+                    }
+                }
+            }
+        });
+
         if (loadMode.equals(getString(R.string.value_map_load_mode_subject))) {
             // 通过地图主体ID加载
             mIndoorMap.getMapProxy().load(mMapSubjectId);
