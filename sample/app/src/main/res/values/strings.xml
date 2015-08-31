@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">室内地图demo</string>
+    <string name="event_name">XX商场（XX店）</string>
+    <string name="search_hint">请输入店铺或展台名称</string>
+    <string name="btn_cancel">取消</string>
+    <string name="toast_map_search_success">地图中找到%1$s处相关内容！</string>
+    <string name="toast_map_search_failure">地图中未能找到相关内容！</string>
+    <string name="action_start_runtime_locate">启用实时定位</string>
+    <string name="action_stop_runtime_locate">关闭实时定位</string>
+    <string name="action_add_overlay">添加覆盖物</string>
+    <string name="action_remove_overlay">移除覆盖物</string>
+    <string name="action_stair_first">楼梯优先</string>
+    <string name="action_auto_walk_first">扶梯优先</string>
+    <string name="action_elevator_first">电梯优先</string>
+</resources>

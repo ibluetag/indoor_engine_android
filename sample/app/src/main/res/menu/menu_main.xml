@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".DemoIndoorActivity">
+    <item android:id="@+id/action_start_runtime_locate"
+          android:title="@string/action_start_runtime_locate"
+          android:orderInCategory="100"/>
+    <item android:id="@+id/action_stop_runtime_locate"
+          android:title="@string/action_stop_runtime_locate"
+          android:orderInCategory="101"/>
+    <item android:id="@+id/action_add_overlay"
+          android:title="@string/action_add_overlay"
+          android:orderInCategory="102"/>
+    <item android:id="@+id/action_remove_overlay"
+          android:title="@string/action_remove_overlay"
+          android:orderInCategory="103"/>
+    <item android:id="@+id/action_stair_first"
+          android:title="@string/action_stair_first"
+          android:orderInCategory="104"/>
+    <item android:id="@+id/action_auto_walk_first"
+          android:title="@string/action_auto_walk_first"
+          android:orderInCategory="105"/>
+    <item android:id="@+id/action_elevator_first"
+          android:title="@string/action_elevator_first"
+          android:orderInCategory="106"/>
+</menu>
