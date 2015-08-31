@@ -1,14 +1,14 @@
 package com.ibluetag.indoor;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.util.Log;
+import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.ibluetag.indoor.sdk.model.BitmapOverlay;
@@ -18,8 +18,7 @@ import com.ibluetag.indoor.sdk.MapProxy;
 
 public class DemoIndoorActivity extends Activity {
     private static final String TAG = "DemoIndoorActivity";
-    // 地图主题唯一标识符，向触景地图服务提供商申请获取
-    private static final int DEMO_SUBJECT_ID = 1;
+    public static final int REQUEST_CODE_SETTINGS = 0x01;
 
     private TextView mTitle;
     private ImageButton mSearchBtn;
@@ -33,6 +32,10 @@ public class DemoIndoorActivity extends Activity {
     private long mCurrentFloorId = 1;
     private BitmapOverlay mBitmapOverlay1;
     private BitmapOverlay mBitmapOverlay2;
+    private DemoLocateAgent mLocateAgent = new DemoLocateAgent();
+    private SharedPreferences mSharedPref;
+    private String mMapServerUrl;
+    private long mMapSubjectId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,19 +44,51 @@ public class DemoIndoorActivity extends Activity {
         setupTitleBar();
         setupIndoorMap();
         setupOverlay();
+        reloadMap();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mLocateAgent.isStarted()) {
+            mLocateAgent.stop();
+        }
         mBitmapOverlay1.destroy();
         mBitmapOverlay2.destroy();
         mIndoorMap.getMapProxy().destroy();
     }
 
+    private void reloadMap() {
+        mSharedPref = getSharedPreferences(DemoSettingsActivity.SHARED_PREF_NAME, 0);
+        mMapServerUrl = mSharedPref.getString(DemoSettingsActivity.KEY_MAP_SERVER,
+                DemoSettingsActivity.DEFAULT_MAP_SERVER);
+        mMapSubjectId = mSharedPref.getLong(DemoSettingsActivity.KEY_MAP_SUBJECT_ID,
+                DemoSettingsActivity.DEFAULT_MAP_SUBJECT_ID);
+        mLocateAgent.setServer(mSharedPref.getString(DemoSettingsActivity.KEY_LOCATE_SERVER,
+                DemoSettingsActivity.DEFAULT_LOCATE_SERVER));
+        mLocateAgent.setTarget(mSharedPref.getString(DemoSettingsActivity.KEY_LOCATE_MAC,
+                DemoSettingsActivity.DEFAULT_LOCATE_MAC));
+        Log.v(TAG, "reloadMap, map server: " + mMapServerUrl + ", id: " + mMapSubjectId);
+        // 设置地图服务器
+        mIndoorMap.getMapProxy().initServer(mMapServerUrl);
+        // 通过地图主体（可能是商场/机构/场所等）唯一标识符加载地图
+        mIndoorMap.getMapProxy().load(mMapSubjectId);
+    }
+
     private void setupTitleBar() {
+        // show virtual menu key since action bar is hidden by theme
+        // NOTE: not required for formal app
+        try {
+            getWindow().addFlags(
+                    WindowManager.LayoutParams.class.getField("FLAG_NEEDS_MENU_KEY").getInt(null));
+        } catch (NoSuchFieldException e) {
+            // Ignore since this field won't exist in most versions of Android
+        } catch (Exception e) {
+            Log.w(TAG, e.toString());
+        }
+
+
         mTitle = (TextView) findViewById(R.id.title);
-        mTitle.setText(R.string.event_name);
         mSearchInputLayout = findViewById(R.id.search_input_layout);
         mSearchInputClearBtn = (ImageButton) findViewById(R.id.search_input_clear);
         mSearchInputClearBtn.setOnClickListener(new View.OnClickListener() {
@@ -146,10 +181,17 @@ public class DemoIndoorActivity extends Activity {
                 mCurrentFloorId = floorId;
             }
         });
-        // 通过地图主体（可能是商场/机构/场所等）唯一标识符加载地图
-        mIndoorMap.getMapProxy().load(DEMO_SUBJECT_ID);
+        // 设置定位监听
+        mIndoorMap.getMapProxy().setLocateListener(new MapProxy.LocateListener() {
+            @Override
+            public void onLocateNotInBuilding() {
+                Toast.makeText(getApplicationContext(), R.string.toast_locate_not_in_building,
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+        });
         // 设置定位代理
-        mIndoorMap.getMapProxy().setLocateAgent(new DemoLocateAgent());
+        mIndoorMap.getMapProxy().setLocateAgent(mLocateAgent);
     }
 
     private void setupOverlay() {
@@ -170,6 +212,10 @@ public class DemoIndoorActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent intent = new Intent(getApplicationContext(), DemoSettingsActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_SETTINGS);
+                return true;
             case R.id.action_start_runtime_locate:
                 mIndoorMap.getMapProxy().enableLocating(true);
                 return true;
@@ -197,5 +243,19 @@ public class DemoIndoorActivity extends Activity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_SETTINGS:
+                if (resultCode == RESULT_OK) {
+                    reloadMap();
+                }
+                break;
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

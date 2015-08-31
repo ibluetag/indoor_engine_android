@@ -1,47 +1,56 @@
 package com.ibluetag.indoor;
 
-import android.graphics.PointF;
 import android.os.Handler;
 import android.util.Log;
 import com.ibluetag.indoor.sdk.location.LocateAgent;
 import com.ibluetag.indoor.sdk.location.Location;
 import com.ibluetag.indoor.sdk.location.LocationListener;
+import com.ibluetag.loc.uradiosys.PositionAPI;
+import com.ibluetag.loc.uradiosys.TagStatus;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.HashMap;
+import java.util.Map;
 
-// TODO: implemented by locating protocol ('loc.jar')
 public class DemoLocateAgent extends LocateAgent {
     private static final String TAG = "DemoLocateAgent";
+    private static final int UPDATE_INTERVAL_MS = 2000;
 
     private Handler mHandler = new Handler();
     private boolean mIsStarted = false;
-    private FakeRoute mFakeRoute = new FakeRoute();
+    private String mTargetMac;
+
+    // 特定应用场景服务器中的地图id与触景地图服务器楼层id映射关系
+    private static Map<Long, Long> sFloorMapping = new HashMap<>();
+    static {
+        sFloorMapping.put(331165345L, 9L);
+    }
+
+    // 设置定位服务器
+    public void setServer(String serverUrl) {
+        Log.v(TAG, "setServer, " + serverUrl);
+        PositionAPI.setServer(serverUrl);
+    }
+
+    // 设置定位目标MAC
+    public void setTarget(String mac) {
+        Log.v(TAG, "setTarget, " + mac);
+        mTargetMac = mac;
+    }
 
     @Override
     public void requestLocation() {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Location loc = new Location().setBuilding(1)
-                                             .setFloor(1)
-                                             .setX(600)
-                                             .setY(600);
-                Log.v(TAG, "notifyLocation, " + loc);
-                notifyLocation(LocationListener.LOCATE_SUCCESS, loc);
-            }
-        }, 1000);
+        updateTagStatus();
     }
 
     @Override
     public void start() {
-        mFakeRoute.start();
+        mHandler.postDelayed(mUpdateTagRunnable, UPDATE_INTERVAL_MS);
         mIsStarted = true;
     }
 
     @Override
     public void stop() {
-        mFakeRoute.stop();
+        mHandler.removeCallbacks(mUpdateTagRunnable);
         mIsStarted = false;
     }
 
@@ -50,64 +59,34 @@ public class DemoLocateAgent extends LocateAgent {
         return mIsStarted;
     }
 
-    class FakeRoute {
-        private Timer mTimer = null;
-        private TimerTask mTimerTask = null;
-        private boolean mIsRunning = false;
-        private int mCounter = 0;
-        private PointF mCurPos = new PointF();
-
-        public void start() {
-            if (mIsRunning) {
-                return;
+    private void updateTagStatus() {
+        PositionAPI.getTagStatus(mTargetMac, new PositionAPI.TagStatusCallback() {
+            @Override
+            public void onResult(TagStatus tagStatus) {
+                if (tagStatus == null) {
+                    Log.w(TAG, "get tag status fail, mac: " + mTargetMac);
+                    notifyLocation(LocationListener.LOCATE_UNKNOWN_ERROR, null);
+                    return;
+                }
+                if (sFloorMapping.get(tagStatus.getMapId()) == null) {
+                    Log.w(TAG, "floor id not found for map<" + tagStatus.getMapId() + ">");
+                    notifyLocation(LocationListener.LOCATE_UNKNOWN_ERROR, null);
+                    return;
+                }
+                Location loc = new Location().setFloor(sFloorMapping.get(tagStatus.getMapId()))
+                                             .setX(tagStatus.getX())
+                                             .setY(tagStatus.getY());
+                Log.v(TAG, "notifyLocation, " + loc);
+                notifyLocation(LocationListener.LOCATE_SUCCESS, loc);
             }
-            if (mTimer == null) {
-                mTimer = new Timer();
-            }
-
-            if (mTimerTask == null) {
-                mCounter = 0;
-                mCurPos.x = 230;
-                mCurPos.y = 1110;
-                mTimerTask = new TimerTask() {
-                    @Override
-                    public void run() {
-                        int step = (mCounter++) % 40;
-                        if (step >= 0 && step <= 9) {
-                            mCurPos.x += 20;
-                        } else if (step >= 10 && step <= 19) {
-                            mCurPos.y += 20;
-                        } else if (step >= 20 && step <= 29) {
-                            mCurPos.x -= 20;
-                        } else {
-                            mCurPos.y -= 20;
-                        }
-                        Location loc = new Location().setBuilding(1)
-                                                     .setFloor(1)
-                                                     .setX(mCurPos.x)
-                                                     .setY(mCurPos.y);
-                        Log.v(TAG, "notifyLocation, " + loc);
-                        notifyLocation(LocationListener.LOCATE_SUCCESS, loc);
-                    }
-                };
-            }
-            mTimer.scheduleAtFixedRate(mTimerTask, 0, 1000);
-            mIsRunning = true;
-        }
-
-        public void stop() {
-            if (!mIsRunning) {
-                return;
-            }
-            if (mTimer != null) {
-                mTimer.cancel();
-                mTimer = null;
-            }
-            if (mTimerTask != null) {
-                mTimerTask.cancel();
-                mTimerTask = null;
-            }
-            mIsRunning = false;
-        }
+        });
     }
+
+    private Runnable mUpdateTagRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateTagStatus();
+            mHandler.postDelayed(mUpdateTagRunnable, UPDATE_INTERVAL_MS);
+        }
+    };
 }

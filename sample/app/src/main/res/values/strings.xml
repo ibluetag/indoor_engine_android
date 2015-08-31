@@ -1,10 +1,13 @@
 <resources>
-    <string name="app_name">室内地图demo</string>
-    <string name="event_name">XX商场（XX店）</string>
+    <string name="app_name">触景地图</string>
     <string name="search_hint">请输入店铺或展台名称</string>
+    <string name="btn_confirm">确定</string>
     <string name="btn_cancel">取消</string>
     <string name="toast_map_search_success">地图中找到%1$s处相关内容！</string>
     <string name="toast_map_search_failure">地图中未能找到相关内容！</string>
+    <string name="toast_settings_invalid">地图配置参数无效！</string>
+    <string name="toast_locate_not_in_building">不再当前建筑物内，定位取消...</string>
+    <string name="action_settings">地图配置</string>
     <string name="action_start_runtime_locate">启用实时定位</string>
     <string name="action_stop_runtime_locate">关闭实时定位</string>
     <string name="action_add_overlay">添加覆盖物</string>
@@ -12,4 +15,10 @@
     <string name="action_stair_first">楼梯优先</string>
     <string name="action_auto_walk_first">扶梯优先</string>
     <string name="action_elevator_first">电梯优先</string>
+    <string name="settings_title">地图配置</string>
+    <string name="settings_map_server">地图服务器:</string>
+    <string name="settings_map_subject_id">地图主体id:</string>
+    <string name="settings_locate_server">定位服务器:</string>
+    <string name="settings_locate_mac">定位目标:</string>
+    <string name="settings_locate_use_phone_mac">使用本机MAC</string>
 </resources>
