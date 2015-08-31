@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen  xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/pref_map_title"
+                        android:icon="@drawable/ic_map_settings">
+
+        <EditTextPreference android:title="@string/pref_map_server"
+                            android:key="@string/key_map_server"
+                            android:defaultValue="@string/default_map_server"
+                            android:dialogTitle="@string/pref_map_server"
+                            android:dialogIcon="@drawable/ic_map_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <EditTextPreference android:title="@string/pref_map_subject_id"
+                            android:key="@string/key_map_subject_id"
+                            android:numeric="integer"
+                            android:defaultValue="@string/default_map_subject_id"
+                            android:dialogTitle="@string/pref_map_subject_id"
+                            android:dialogIcon="@drawable/ic_map_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_locate_title"
+                        android:icon="@drawable/ic_locate_settings">
+
+        <EditTextPreference android:title="@string/pref_locate_target"
+                            android:key="@string/key_locate_target"
+                            android:defaultValue="@string/default_locate_target"
+                            android:dialogTitle="@string/pref_locate_target"
+                            android:dialogIcon="@drawable/ic_locate_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <CheckBoxPreference android:title="@string/pref_locate_with_phone"
+                            android:key="@string/key_locate_with_phone"
+                            android:defaultValue="false"/>
+
+        <EditTextPreference android:title="@string/pref_locate_wifi_scan_interval"
+                            android:key="@string/key_locate_wifi_scan_interval"
+                            android:dependency="@string/key_locate_with_phone"
+                            android:numeric="integer"
+                            android:defaultValue="@string/default_locate_wifi_scan_interval"
+                            android:dialogTitle="@string/pref_locate_wifi_scan_interval"
+                            android:dialogIcon="@drawable/ic_wifi_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <CheckBoxPreference android:title="@string/pref_locate_beacon_discovery"
+                            android:key="@string/key_locate_beacon_discovery"
+                            android:defaultValue="false"/>
+
+        <EditTextPreference android:title="@string/pref_locate_beacon_scan_interval"
+                            android:key="@string/key_locate_beacon_scan_interval"
+                            android:dependency="@string/key_locate_beacon_discovery"
+                            android:numeric="integer"
+                            android:defaultValue="@string/default_locate_beacon_scan_interval"
+                            android:dialogTitle="@string/pref_locate_beacon_scan_interval"
+                            android:dialogIcon="@drawable/ic_beacon_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <EditTextPreference android:title="@string/pref_locate_beacon_server"
+                            android:key="@string/key_locate_beacon_server"
+                            android:dependency="@string/key_locate_beacon_discovery"
+                            android:defaultValue="@string/default_locate_beacon_server"
+                            android:dialogTitle="@string/pref_locate_beacon_server"
+                            android:dialogIcon="@drawable/ic_beacon_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <EditTextPreference android:title="@string/pref_locate_beacon_port"
+                            android:key="@string/key_locate_beacon_port"
+                            android:dependency="@string/key_locate_beacon_discovery"
+                            android:numeric="integer"
+                            android:defaultValue="@string/default_locate_beacon_port"
+                            android:dialogTitle="@string/pref_locate_beacon_port"
+                            android:dialogIcon="@drawable/ic_beacon_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_others_title"
+                        android:icon="@drawable/ic_other_settings">
+
+        <CheckBoxPreference android:title="@string/pref_push_enable"
+                            android:key="@string/key_push_enable"
+                            android:defaultValue="false"/>
+
+        <EditTextPreference android:title="@string/pref_push_server"
+                            android:key="@string/key_push_server"
+                            android:dependency="@string/key_push_enable"
+                            android:defaultValue="@string/default_push_server"
+                            android:dialogTitle="@string/pref_push_server"
+                            android:dialogIcon="@drawable/ic_push_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <EditTextPreference android:title="@string/pref_route_attach_threshold"
+                            android:key="@string/key_route_attach_threshold"
+                            android:numeric="decimal"
+                            android:defaultValue="@string/default_route_attach_threshold"
+                            android:dialogTitle="@string/pref_route_attach_threshold"
+                            android:dialogIcon="@drawable/ic_route_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <EditTextPreference android:title="@string/pref_route_deviate_threshold"
+                            android:key="@string/key_route_deviate_threshold"
+                            android:numeric="decimal"
+                            android:defaultValue="@string/default_route_deviate_threshold"
+                            android:dialogTitle="@string/pref_route_deviate_threshold"
+                            android:dialogIcon="@drawable/ic_route_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
+        <ListPreference android:title="@string/pref_route_rule"
+                        android:key="@string/key_route_rule"
+                        android:defaultValue="@string/default_route_rule"
+                        android:dialogTitle="@string/pref_route_rule"
+                        android:dialogIcon="@drawable/ic_route_settings"
+                        android:entries="@array/route_rule_entries"
+                        android:entryValues="@array/route_rule_values"/>
+
+        <CheckBoxPreference android:title="@string/pref_smooth_route"
+                            android:summary="@string/pref_smooth_route_summary"
+                            android:key="@string/key_smooth_route"
+                            android:defaultValue="false"/>
+
+        <CheckBoxPreference android:title="@string/pref_clear_cache"
+                            android:summary="@string/pref_clear_cache_summary"
+                            android:key="@string/key_clear_cache"
+                            android:defaultValue="false"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
