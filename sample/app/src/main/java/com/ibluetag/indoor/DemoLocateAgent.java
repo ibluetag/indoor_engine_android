@@ -36,6 +36,10 @@ public class DemoLocateAgent extends LocateAgent {
     public void setLocateServer(String urlString) {
         Log.v(TAG, "setLocateServer, " + urlString);
         PositionAPI.setLocateServer(urlString);
+        if (mIsStarted) {
+            // update tag status at once
+            updateTagStatus(false);
+        }
     }
 
     // 设置定位目标MAC
@@ -95,13 +99,15 @@ public class DemoLocateAgent extends LocateAgent {
     @Override
     public void start() {
         // clear info
+        Log.v(TAG, "start");
         mLastAreaInfo = null;
-        mHandler.postDelayed(mUpdateTagRunnable, UPDATE_INTERVAL_MS);
+        mHandler.post(mUpdateTagRunnable);
         mIsStarted = true;
     }
 
     @Override
     public void stop() {
+        Log.v(TAG, "stop");
         mHandler.removeCallbacks(mUpdateTagRunnable);
         mIsStarted = false;
     }
@@ -115,6 +121,11 @@ public class DemoLocateAgent extends LocateAgent {
         PositionAPI.getTagStatus(mTargetMac, new PositionAPI.TagStatusCallback() {
             @Override
             public void onResult(TagStatus tagStatus) {
+                if (!mIsStarted) {
+                    // ignore callback if agent is stopped
+                    // we may receive connection timeout callback from one of inner/outer network
+                    return;
+                }
                 if (tagStatus == null) {
                     Log.w(TAG, "get tag status fail, mac: " + mTargetMac);
                     notifyLocation(force ? LocationListener.LOCATE_FORCE_FAILURE :

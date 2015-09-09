@@ -32,6 +32,7 @@ import java.util.*;
 
 public class DemoIndoorActivity extends Activity {
     private static final String TAG = "DemoIndoorActivity";
+    public static final int ACTIVITY_REQUEST_CODE_SETTINGS = 100;
     public static final boolean DUMP_WIFI_SCAN_RESULT = false;
 
     private TextView mTitle;
@@ -80,11 +81,13 @@ public class DemoIndoorActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_indoor_map);
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        registerReceiver(mConnReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         setupTitleBar();
         setupAreaBar();
         setupInfoBar();
         setupIndoorMap();
         setupOverlay();
+        reloadMap();
     }
 
     @Override
@@ -102,13 +105,30 @@ public class DemoIndoorActivity extends Activity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ACTIVITY_REQUEST_CODE_SETTINGS) {
+            // reload map if we're from settings
+            reloadMap();
+        }
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
-        if (!isNetworkAvailable(true)) {
-            Log.w(TAG, "network not available...");
+        mIndoorMap.getMapProxy().enableLocating(true);
+        if (mLocateAgent != null && !mLocateAgent.isStarted()) {
+            mLocateAgent.start();
         }
-        // always reload since we support downloading offline map
-        reloadMap();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mIndoorMap.getMapProxy().enableLocating(false);
+        if (mLocateAgent != null && mLocateAgent.isStarted()) {
+            mLocateAgent.stop();
+        }
     }
 
     private void reloadMap() {
@@ -583,9 +603,12 @@ public class DemoIndoorActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                startActivity(new Intent(getApplicationContext(), DemoPreferenceActivity.class));
+                startActivityForResult(
+                        new Intent(getApplicationContext(), DemoPreferenceActivity.class),
+                        ACTIVITY_REQUEST_CODE_SETTINGS);
                 return true;
             case R.id.action_add_overlay:
+                //mLocateAgent.notifyFakeLocation(18, 30, 30);
                 mBitmapOverlay1.attach(mCurrentBuilding.getId(), mCurrentFloorId);
                 mBitmapOverlay2.attach(mCurrentBuilding.getId(), mCurrentFloorId);
                 View infoWindowLayout  = getLayoutInflater().inflate(R.layout.layout_info_window,
@@ -607,6 +630,7 @@ public class DemoIndoorActivity extends Activity {
                 mIndoorMap.getMapProxy().showInfoWindow(window);
                 return true;
             case R.id.action_remove_overlay:
+                //mLocateAgent.notifyFakeLocation(17, 20, 20);
                 mBitmapOverlay1.detach();
                 mBitmapOverlay2.detach();
                 mIndoorMap.getMapProxy().removeInfoWindow();
@@ -681,6 +705,15 @@ public class DemoIndoorActivity extends Activity {
         }
         return false;
     }
+
+    private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (!isNetworkAvailable(true)) {
+                Log.w(TAG, "network not available");
+            }
+        }
+    };
 
     private void startWifiScan() {
         if (mIsWifiScanning) {
