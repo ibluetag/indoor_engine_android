@@ -74,7 +74,7 @@
     <string name="default_push_server">http://www.uradiosys.com:8092</string>
     <string name="default_route_attach_threshold">5</string>
     <string name="default_route_deviate_threshold">10</string>
-    <string name="default_route_rule">0</string>
+    <string name="default_route_rule">3</string>
 
     <string name="pref_map_title">地图设置</string>
     <string name="pref_map_server">地图服务器</string>
