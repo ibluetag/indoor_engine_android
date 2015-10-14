@@ -83,8 +83,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 19 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="ibt-indoor-sdk-1.1.6" level="project" />
     <orderEntry type="library" exported="" name="uradiosys-loc" level="project" />
+    <orderEntry type="library" exported="" name="ibt-indoor-sdk-1.1.7" level="project" />
     <orderEntry type="library" exported="" name="picasso-2.5.2" level="project" />
   </component>
 </module>

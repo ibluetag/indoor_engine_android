@@ -58,6 +58,7 @@ public class DemoIndoorActivity extends Activity {
     private BitmapOverlay mBitmapOverlay1;
     private BitmapOverlay mBitmapOverlay2;
     private DemoLocateAgent mLocateAgent = new DemoLocateAgent();
+    private BeaconLocateAgent mBeaconLocateAgent;
     private String mMapServerUrl;
     private long mMapSubjectId;
     private String mTargetMac;
@@ -71,6 +72,7 @@ public class DemoIndoorActivity extends Activity {
     private boolean mIsToastNotInBuildingRequired = true;
     private String mCurrentLoadMode;
     private long mInitialFloorId = -1;
+    private boolean mUseBeaconAgent = false;
 
     enum Area {
         SOUTH, NORTH, ALL,
@@ -95,9 +97,14 @@ public class DemoIndoorActivity extends Activity {
         super.onDestroy();
         destroyBeaconScan();
         stopWifiScan();
+        unregisterReceiver(mConnReceiver);
         mLocateAgent.unRegisterListener(mPushListener);
         if (mLocateAgent.isStarted()) {
             mLocateAgent.stop();
+        }
+        if (mBeaconLocateAgent != null) {
+            mBeaconLocateAgent.stop();
+            mBeaconLocateAgent.destroy();
         }
         mBitmapOverlay1.destroy();
         mBitmapOverlay2.destroy();
@@ -117,8 +124,14 @@ public class DemoIndoorActivity extends Activity {
     protected void onStart() {
         super.onStart();
         mIndoorMap.getMapProxy().enableLocating(true);
-        if (mLocateAgent != null && !mLocateAgent.isStarted()) {
-            mLocateAgent.start();
+        if (BeaconLocateAgent.isAvailable()) {
+            if (mBeaconLocateAgent != null && !mBeaconLocateAgent.isStarted()) {
+                mBeaconLocateAgent.start();
+            }
+        } else {
+            if (mLocateAgent != null && !mLocateAgent.isStarted()) {
+                mLocateAgent.start();
+            }
         }
     }
 
@@ -128,6 +141,9 @@ public class DemoIndoorActivity extends Activity {
         mIndoorMap.getMapProxy().enableLocating(false);
         if (mLocateAgent != null && mLocateAgent.isStarted()) {
             mLocateAgent.stop();
+        }
+        if (mBeaconLocateAgent != null && mBeaconLocateAgent.isStarted()) {
+            mBeaconLocateAgent.stop();
         }
     }
 
@@ -147,6 +163,15 @@ public class DemoIndoorActivity extends Activity {
         mLocateAgent.enablePush(sp.getBoolean(getString(R.string.key_push_enable), false));
         mLocateAgent.setPushServer(sp.getString(getString(R.string.key_push_server),
                 getString(R.string.default_push_server)));
+        mLocateAgent.setUpdateInterval(Long.parseLong(
+                PreferenceManager.getDefaultSharedPreferences(this).getString(
+                        getString(R.string.key_locate_update_interval),
+                        getString(R.string.default_locate_update_interval))));
+
+        mBeaconLocateAgent.setMapServer(mMapServerUrl);
+        mBeaconLocateAgent.setBeaconScanInterval(Integer.parseInt(
+                sp.getString(getString(R.string.key_locate_beacon_scan_interval),
+                        getString(R.string.default_locate_beacon_scan_interval))));
 
         if (sp.getBoolean(getString(R.string.key_locate_with_phone), false)) {
             startWifiScan();
@@ -340,6 +365,7 @@ public class DemoIndoorActivity extends Activity {
     }
 
     private void setupIndoorMap() {
+        mBeaconLocateAgent = new BeaconLocateAgent(this, null);
         mLocateAgent.registerListener(mPushListener);
         mIndoorMap = (IndoorMapView) findViewById(R.id.indoor_map);
         // 设置地图加载监听
@@ -385,6 +411,24 @@ public class DemoIndoorActivity extends Activity {
                     return;
                 }
                 mCurrentFloorId = floorId;
+                mBeaconLocateAgent.checkAvailable(floorId, new BeaconLocateAgent.StatusListener() {
+                    @Override
+                    public void onResult(boolean available) {
+                        if (available) {
+                            Log.v(TAG, "switch to beacon locate agent");
+                            mLocateAgent.stop();
+                            mIndoorMap.getMapProxy().setLocateAgent(mBeaconLocateAgent);
+                            mBeaconLocateAgent.start();
+                        } else {
+                            Log.v(TAG, "switch to locate agent");
+                            mBeaconLocateAgent.stop();
+                            mIndoorMap.getMapProxy().setLocateAgent(mLocateAgent);
+                            mLocateAgent.start();
+                        }
+                    }
+                });
+  ;
+
                 Floor curFloor = mIndoorMap.getMapProxy().getCurrentFloorInfo();
                 Log.v(TAG, "floor: " + curFloor.toString() +
                         ", proportion: " + mIndoorMap.getMapProxy().getProportion() +
@@ -443,7 +487,7 @@ public class DemoIndoorActivity extends Activity {
             }
         });
         // 设置定位代理
-        mIndoorMap.getMapProxy().setLocateAgent(mLocateAgent);
+        //mIndoorMap.getMapProxy().setLocateAgent(mLocateAgent);
     }
 
     private void setupAreaBar() {

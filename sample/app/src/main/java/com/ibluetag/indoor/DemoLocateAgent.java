@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DemoLocateAgent extends LocateAgent {
     private static final String TAG = "DemoLocateAgent";
-    private static final int UPDATE_INTERVAL_MS = 2000;
+    private static final long DEFAULT_UPDATE_INTERVAL_MS = 2000;
 
     private Handler mHandler = new Handler();
     private boolean mIsStarted = false;
@@ -25,6 +25,7 @@ public class DemoLocateAgent extends LocateAgent {
     private List<Listener> mListeners = new ArrayList<Listener>();
     private AreaInfo mLastAreaInfo = null;
     private boolean mIsPushEnabled = false;
+    private long mUpdateInterval = DEFAULT_UPDATE_INTERVAL_MS;
 
     // 设置地图服务器
     public void setMapServer(String serverUrl) {
@@ -52,6 +53,13 @@ public class DemoLocateAgent extends LocateAgent {
     public void setBeaconServer(String urlString) {
         Log.v(TAG, "setBeaconServer, " + urlString);
         PositionAPI.setBeaconServer(urlString);
+    }
+
+    public void setUpdateInterval(long interval) {
+        Log.v(TAG, "setUpdateInterval, " + interval);
+        if (interval >= 0) {
+            mUpdateInterval = interval;
+        }
     }
 
     public void reportDevice(Context context, String mac,
@@ -98,18 +106,22 @@ public class DemoLocateAgent extends LocateAgent {
 
     @Override
     public void start() {
-        // clear info
-        Log.v(TAG, "start");
-        mLastAreaInfo = null;
-        mHandler.post(mUpdateTagRunnable);
-        mIsStarted = true;
+        if (!mIsStarted) {
+            // clear info
+            Log.v(TAG, "start");
+            mLastAreaInfo = null;
+            mHandler.post(mUpdateTagRunnable);
+            mIsStarted = true;
+        }
     }
 
     @Override
     public void stop() {
-        Log.v(TAG, "stop");
-        mHandler.removeCallbacks(mUpdateTagRunnable);
-        mIsStarted = false;
+        if (mIsStarted) {
+            Log.v(TAG, "stop");
+            mHandler.removeCallbacks(mUpdateTagRunnable);
+            mIsStarted = false;
+        }
     }
 
     @Override
@@ -170,7 +182,7 @@ public class DemoLocateAgent extends LocateAgent {
         @Override
         public void run() {
             updateTagStatus(false);
-            mHandler.postDelayed(mUpdateTagRunnable, UPDATE_INTERVAL_MS);
+            mHandler.postDelayed(mUpdateTagRunnable, mUpdateInterval);
         }
     };
 

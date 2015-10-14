@@ -42,6 +42,7 @@
     <string name="key_locate_server">indoor_locate_server</string>
     <string name="key_locate_target">indoor_locate_target</string>
     <string name="key_locate_with_phone">indoor_locate_with_phone</string>
+    <string name="key_locate_update_interval">indoor_locate_update_interval</string>
     <string name="key_locate_wifi_scan_interval">indoor_locate_wifi_scan_interval</string>
     <string name="key_locate_beacon_discovery">indoor_locate_beacon_discovery</string>
     <string name="key_locate_beacon_scan_interval">indoor_locate_beacon_scan_interval</string>
@@ -67,6 +68,7 @@
     <string name="default_map_load_initial_label">NC8032</string>
     <string name="default_locate_server">http://www.uradiosys.com:8065</string>
     <string name="default_locate_target">B0:8E:1A:50:3D:61</string>
+    <string name="default_locate_update_interval">2000</string>
     <string name="default_locate_wifi_scan_interval">1000</string>
     <string name="default_locate_beacon_scan_interval">3000</string>
     <string name="default_locate_beacon_server">58.240.212.6</string>
@@ -86,6 +88,7 @@
     <string name="pref_locate_server">备用定位服务器（后台未配置时）</string>
     <string name="pref_locate_target">定位目标MAC</string>
     <string name="pref_locate_with_phone">定位本机</string>
+    <string name="pref_locate_update_interval">定位获取间隔(ms)</string>
     <string name="pref_locate_wifi_scan_interval">WiFi扫描间隔(ms)</string>
     <string name="pref_locate_beacon_discovery">开启Beacon发现</string>
     <string name="pref_locate_beacon_scan_interval">Beacon扫描间隔(ms)</string>

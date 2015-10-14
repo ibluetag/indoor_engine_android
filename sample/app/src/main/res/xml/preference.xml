@@ -50,6 +50,15 @@
     <PreferenceCategory android:title="@string/pref_locate_title"
                         android:icon="@drawable/ic_locate_settings">
 
+        <EditTextPreference android:title="@string/pref_locate_update_interval"
+                            android:key="@string/key_locate_update_interval"
+                            android:numeric="integer"
+                            android:defaultValue="@string/default_locate_update_interval"
+                            android:dialogTitle="@string/pref_locate_update_interval"
+                            android:dialogIcon="@drawable/ic_locate_settings"
+                            android:positiveButtonText="@string/btn_confirm"
+                            android:negativeButtonText="@string/btn_cancel"/>
+
         <EditTextPreference android:title="@string/pref_locate_target"
                             android:key="@string/key_locate_target"
                             android:defaultValue="@string/default_locate_target"

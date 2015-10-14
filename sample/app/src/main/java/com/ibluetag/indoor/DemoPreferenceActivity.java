@@ -19,6 +19,7 @@ public class DemoPreferenceActivity extends PreferenceActivity
     private ListPreference mMapLoadModeList;
     private EditTextPreference mMapLoadFloorIdEdit;
     private EditTextPreference mMapLoadInitialLabelEdit;
+    private EditTextPreference mLocateUpdateIntervalEdit;
     private EditTextPreference mLocateTargetEdit;
     private CheckBoxPreference mLocateWithPhoneCheck;
     private EditTextPreference mLocateWifiScanIntervalEdit;
@@ -74,6 +75,12 @@ public class DemoPreferenceActivity extends PreferenceActivity
                 getString(R.string.value_map_load_mode_booth_select)) ||
                 mMapLoadModeList.getValue().equals(
                 getString(R.string.value_map_load_mode_booth_route)));
+
+        // locate
+        mLocateUpdateIntervalEdit = (EditTextPreference) findPreference(
+                getString(R.string.key_locate_update_interval));
+        mLocateUpdateIntervalEdit.setSummary(mLocateUpdateIntervalEdit.getText());
+        mLocateUpdateIntervalEdit.setOnPreferenceChangeListener(this);
 
         // wifi
         mLocateTargetEdit = (EditTextPreference) findPreference(
@@ -153,6 +160,8 @@ public class DemoPreferenceActivity extends PreferenceActivity
             mMapLoadFloorIdEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_map_load_initial_label))) {
             mMapLoadInitialLabelEdit.setSummary((CharSequence) newValue);
+        } else if (preference.getKey().equals(getString(R.string.key_locate_update_interval))) {
+            mLocateUpdateIntervalEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_locate_target))) {
             mLocateTargetEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_locate_with_phone))) {
