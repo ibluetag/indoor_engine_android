@@ -11,6 +11,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+//DemoWebActivity类就是打开一个URL，并在Webiew上显示
+//目前仅仅在WIFI定位时的信息推送弹出框出现时，若用户点击它，则会进入这个类。
+//如果不需要WIFI定位或者不需要信息推送，这个类可以删除
 public class DemoWebActivity extends Activity {
     public static final String TAG = "DemoWebActivity";
     public static final String EXTRA_WEB_URL = "extra_web_url";

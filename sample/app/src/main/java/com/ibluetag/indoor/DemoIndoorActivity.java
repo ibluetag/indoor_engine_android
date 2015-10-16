@@ -30,11 +30,15 @@ import com.squareup.picasso.Picasso;
 
 import java.util.*;
 
+/*
+  Demo程序的入口Activity
+ */
 public class DemoIndoorActivity extends Activity {
     private static final String TAG = "DemoIndoorActivity";
     public static final int ACTIVITY_REQUEST_CODE_SETTINGS = 100;
     public static final boolean DUMP_WIFI_SCAN_RESULT = false;
 
+    //首页界面上方的Views
     private TextView mTitle;
     private ImageButton mSearchBtn;
     private View mSearchInputLayout;
@@ -52,13 +56,18 @@ public class DemoIndoorActivity extends Activity {
     private ImageView mInfoImage;
     private Button mInfoDetailBtn;
 
-    private IndoorMapView mIndoorMap;
+    private IndoorMapView mIndoorMap;//室内地图的View
     private Building mCurrentBuilding;
     private long mCurrentFloorId = -1;
     private BitmapOverlay mBitmapOverlay1;
     private BitmapOverlay mBitmapOverlay2;
-    private DemoLocateAgent mLocateAgent = new DemoLocateAgent();
-    private BeaconLocateAgent mBeaconLocateAgent;
+
+    //Beacon定位和WIFI定位的LocateAgent，
+    //如果不需要WIFI定位mLocateAgent有关的代码都可以删除。
+    //如果不需要iBeacon定位，则mBeaconLocateAgent有关的代码可以删除
+    private DemoLocateAgent mLocateAgent = new DemoLocateAgent();//WIFI定位引擎的Agent
+    private BeaconLocateAgent mBeaconLocateAgent;//Beacon定位引擎的Agent
+
     private String mMapServerUrl;
     private long mMapSubjectId;
     private String mTargetMac;
@@ -67,8 +76,10 @@ public class DemoIndoorActivity extends Activity {
     private int mWiFiScanInterval = -1;
     private boolean mIsWifiScanning = false;
     private AreaInfo mCurrentAreaInfo;
-    private BeaconAPI mBeaconAPI;
+
+    private BeaconAPI mBeaconAPI;//Beacon检测的底层API
     private int mBeaconInterval = -1;
+
     private boolean mIsToastNotInBuildingRequired = true;
     private String mCurrentLoadMode;
     private long mInitialFloorId = -1;
@@ -82,32 +93,54 @@ public class DemoIndoorActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_indoor_map);
+        //用于wifi全频道扫描的wifi manager，wifi定位引擎需要
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+        //注册网络断开或者连接上的通知处理
         registerReceiver(mConnReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+        //设置标题栏，包括搜索等View的处理句柄
         setupTitleBar();
+        //设置南馆/北馆/全部这3个按钮的处理函数
         setupAreaBar();
+        //设置WIFI定位引擎的推送信息相关的Views
         setupInfoBar();
+
+        //设置室内地图Views
         setupIndoorMap();
+        //设置地图测试覆盖物
         setupOverlay();
+
+        //加载室内地图
         reloadMap();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //停止底层的Beacon扫描
         destroyBeaconScan();
+        //停止WIFI扫描
         stopWifiScan();
+        //去除网络状态更新的通知处理Receiver
         unregisterReceiver(mConnReceiver);
+        //去除WIFI定位引擎的推送信息处理句柄
         mLocateAgent.unRegisterListener(mPushListener);
+
+        //停止WIFI定位引擎
         if (mLocateAgent.isStarted()) {
             mLocateAgent.stop();
         }
+        //停止Beacon定位引擎
         if (mBeaconLocateAgent != null) {
             mBeaconLocateAgent.stop();
             mBeaconLocateAgent.destroy();
         }
+        //删除地图覆盖物
         mBitmapOverlay1.destroy();
         mBitmapOverlay2.destroy();
+
+        //删除室内地图
         mIndoorMap.getMapProxy().destroy();
     }
 
@@ -116,10 +149,12 @@ public class DemoIndoorActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ACTIVITY_REQUEST_CODE_SETTINGS) {
             // reload map if we're from settings
+            //加载室内地图
             reloadMap();
         }
     }
 
+    //在Activity启动后执行，启动定位
     @Override
     protected void onStart() {
         super.onStart();
@@ -135,6 +170,7 @@ public class DemoIndoorActivity extends Activity {
         }
     }
 
+    //在activity不在当前时，停止定位
     @Override
     protected void onStop() {
         super.onStop();
@@ -147,6 +183,7 @@ public class DemoIndoorActivity extends Activity {
         }
     }
 
+    //
     private void reloadMap() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         if (sp.getBoolean(getString(R.string.key_clear_cache), false)) {
@@ -155,30 +192,38 @@ public class DemoIndoorActivity extends Activity {
             sp.edit().putBoolean(getString(R.string.key_clear_cache), false).commit();
         }
 
+        //地图服务器URL
         mMapServerUrl = sp.getString(getString(R.string.key_map_server),
                 getString(R.string.default_map_server));
+        //地图主体ID：对应一个建筑物的所有楼层地图
         mMapSubjectId = Long.parseLong(sp.getString(getString(R.string.key_map_subject_id),
                 getString(R.string.default_map_subject_id)));
+
+        //配置WIFI定位Agent
         mLocateAgent.setMapServer(mMapServerUrl);
         mLocateAgent.enablePush(sp.getBoolean(getString(R.string.key_push_enable), false));
         mLocateAgent.setPushServer(sp.getString(getString(R.string.key_push_server),
-                getString(R.string.default_push_server)));
+                getString(R.string.default_push_server)));//WIFI定位引擎对应的推送服务器
         mLocateAgent.setUpdateInterval(Long.parseLong(
                 PreferenceManager.getDefaultSharedPreferences(this).getString(
                         getString(R.string.key_locate_update_interval),
-                        getString(R.string.default_locate_update_interval))));
+                        getString(R.string.default_locate_update_interval))));//获取WIFI定位位置的间隔
 
+        //配置Beacon定位Agent
         mBeaconLocateAgent.setMapServer(mMapServerUrl);
         mBeaconLocateAgent.setBeaconScanInterval(Integer.parseInt(
                 sp.getString(getString(R.string.key_locate_beacon_scan_interval),
-                        getString(R.string.default_locate_beacon_scan_interval))));
+                        getString(R.string.default_locate_beacon_scan_interval))));//Beacon扫描时间
 
+        //开始WIFI全频道扫描
         if (sp.getBoolean(getString(R.string.key_locate_with_phone), false)) {
             startWifiScan();
         } else {
             stopWifiScan();
         }
 
+        //启动扫描Beacon，但这里的扫描Beacon的目的是为了向wifi定位引擎服务器报告，
+        //并不是为了Beacon定位。这个是wifi定位引擎的部分功能
         if (sp.getBoolean(getString(R.string.key_locate_beacon_discovery), false)) {
             mBeaconInterval = Integer.parseInt(
                     sp.getString(getString(R.string.key_locate_beacon_scan_interval),
@@ -187,22 +232,29 @@ public class DemoIndoorActivity extends Activity {
         } else {
             enableBeaconScan(false);
         }
+
+        //设置要定位的手机的MAC
         mTargetMac = sp.getString(getString(R.string.key_locate_target),
                 getString(R.string.default_locate_target));
         mLocateAgent.setTarget(mTargetMac);
 
+        //设置导航时路径吸附的偏离最大值
         mIndoorMap.getMapProxy().setRouteAttachDistance(Integer.parseInt(sp.getString(
                 getString(R.string.key_route_attach_threshold),
                 getString(R.string.default_route_attach_threshold))));
+        //设置导航时由于偏离太多要求重新计算路径的偏离最小值
         mIndoorMap.getMapProxy().setRouteDeviateDistance(Integer.parseInt(sp.getString(
                 getString(R.string.key_route_deviate_threshold),
                 getString(R.string.default_route_deviate_threshold))));
+        //导航路径的优先级设置
         mIndoorMap.getMapProxy().setRouteRule(Integer.parseInt(sp.getString(
                 getString(R.string.key_route_rule),
                 getString(R.string.default_route_rule))));
+        //平滑模式滑动定位位置，只在导航模式下面
         mIndoorMap.getMapProxy().enableSmoothRoute(
                 sp.getBoolean(getString(R.string.key_smooth_route), false));
 
+        //加载地图的模式设置
         mCurrentLoadMode = sp.getString(getString(R.string.key_map_load_mode),
                 getString(R.string.default_map_load_mode));
         mInitialFloorId = Long.valueOf(
@@ -250,6 +302,7 @@ public class DemoIndoorActivity extends Activity {
             }
         });
 
+        //在上面设置好所有地图的配置后，现在开始西部加载并显示地图
         if (mCurrentLoadMode.equals(getString(R.string.value_map_load_mode_subject))) {
             // 通过地图主体ID加载
             mIndoorMap.getMapProxy().load(mMapSubjectId);
@@ -268,6 +321,8 @@ public class DemoIndoorActivity extends Activity {
 
     }
 
+    //设置界面上地图以外的Views的处理函数
+    //包括title，搜索栏
     private void setupTitleBar() {
         // show virtual menu key since action bar is hidden by theme
         // NOTE: not required for formal app
@@ -364,9 +419,14 @@ public class DemoIndoorActivity extends Activity {
         });
     }
 
+    //设置室内地图View
     private void setupIndoorMap() {
+        //创建Beacon定位和WIFI定位的LocateAgent，如果不需要WIFI定位mLocateAgent的代码都可以删除
         mBeaconLocateAgent = new BeaconLocateAgent(this, null);
+        //注册WIFI定位引擎的推送信息处理句柄，如果不需要推送可以删除
         mLocateAgent.registerListener(mPushListener);
+
+        //获得室内地图View：mIndoorMap
         mIndoorMap = (IndoorMapView) findViewById(R.id.indoor_map);
         // 设置地图加载监听
         mIndoorMap.getMapProxy().setMapListener(new MapProxy.MapListener() {
@@ -403,6 +463,7 @@ public class DemoIndoorActivity extends Activity {
                 }
             }
         });
+
         // 设置楼层切换监听
         mIndoorMap.getMapProxy().setFloorListener(new MapProxy.FloorListener() {
             @Override
@@ -411,6 +472,8 @@ public class DemoIndoorActivity extends Activity {
                     return;
                 }
                 mCurrentFloorId = floorId;
+                //判断新的楼层地图是否支持iBeacon定位，如果支持则停止WIFI定位，启动iBeacon定位
+                //否则停止iBeacon定位，启动WIFI定位
                 mBeaconLocateAgent.checkAvailable(floorId, new BeaconLocateAgent.StatusListener() {
                     @Override
                     public void onResult(boolean available) {
@@ -490,6 +553,11 @@ public class DemoIndoorActivity extends Activity {
         //mIndoorMap.getMapProxy().setLocateAgent(mLocateAgent);
     }
 
+
+    //这是个地图上方特殊的区域，这个区域用于红星美凯拢的真北路商场
+    //这个区域有3个按钮：南馆/北馆/全部，只有真北路商场的1-4层地图有这个区域显示。其它商场无这个显示。
+    //点击某个按钮时，地图将局部的显示真北路商场
+    //对其它地图，均没有这3个按钮
     private void setupAreaBar() {
         mAreaLayout = findViewById(R.id.area_layout);
         mAreaBtns.put(Area.SOUTH, (Button) findViewById(R.id.area_south));
@@ -527,6 +595,7 @@ public class DemoIndoorActivity extends Activity {
         if (floor == null) {
             return;
         }
+        //hasMultiAreas()判断是否地图是真北路商场的1-4层，如果是，则显示该区域，否则隐藏。
         if (floor.hasMultiAreas(mIndoorMap.getMapProxy().getWidth(),
                 mIndoorMap.getMapProxy().getHeight())) {
             mAreaLayout.setVisibility(View.VISIBLE);
@@ -573,6 +642,8 @@ public class DemoIndoorActivity extends Activity {
         }
     }
 
+
+    //设置地图覆盖物
     private void setupOverlay() {
         mBitmapOverlay1 = new BitmapOverlay()
                 .bitmap(BitmapFactory.decodeResource(getResources(), R.drawable.overlay_bitmap1))
@@ -582,6 +653,11 @@ public class DemoIndoorActivity extends Activity {
                 .position(700, 300);
     }
 
+
+
+    //setupInfoBar设置有推送信息时的弹出框InfoLayout
+    //updateInfoBar显示推送信息
+    //mPushListener回调被注册到WIFI定位的LocateAgent，Agent收到定位位置时会判断是否此处有信息推送。
     private void setupInfoBar() {
         mInfoLayout = findViewById(R.id.info_layout);
         mInfoCloseBtn = (ImageButton) findViewById(R.id.info_close);
@@ -637,6 +713,9 @@ public class DemoIndoorActivity extends Activity {
         }
     };
 
+
+
+    //菜单处理
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -725,6 +804,7 @@ public class DemoIndoorActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    //判断当前网络是否可以连接，用于提示用户
     private boolean isNetworkAvailable(boolean showToast) {
         boolean available = isNetworkAvailable();
         if (showToast && !available) {
@@ -750,6 +830,7 @@ public class DemoIndoorActivity extends Activity {
         return false;
     }
 
+    //判断网络是否可用的receiver
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -759,6 +840,7 @@ public class DemoIndoorActivity extends Activity {
         }
     };
 
+    //开启全频道扫描WIFI AP，用于保持手机wifi active，以便让AP检测到手机位置
     private void startWifiScan() {
         if (mIsWifiScanning) {
             return;
@@ -776,6 +858,7 @@ public class DemoIndoorActivity extends Activity {
         mIsWifiScanning = true;
     }
 
+    //停止wifi全频道扫描
     private void stopWifiScan() {
         if (!mIsWifiScanning) {
             return;
@@ -795,6 +878,7 @@ public class DemoIndoorActivity extends Activity {
         }
     };
 
+    //全频道扫描的函数
     private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent intent) {
@@ -820,6 +904,8 @@ public class DemoIndoorActivity extends Activity {
         return builder.toString();
     }
 
+
+    //开启扫描iBeacon设备，并注册一个回调函数
     private void enableBeaconScan(boolean enable) {
         Log.v(TAG, "enableBeaconScan, " + enable);
         if (enable && mBeaconAPI == null) {
@@ -828,12 +914,12 @@ public class DemoIndoorActivity extends Activity {
             mBeaconAPI.addBeaconListener(mBeaconListener);
         }
         if (enable) {
-            if (mBeaconInterval <= 3000) {
+            if (mBeaconInterval <= 2000) {
                 mBeaconAPI.setBetweenScanPeriod(0);
                 mBeaconAPI.setScanPeriod(mBeaconInterval);
             } else {
-                mBeaconAPI.setBetweenScanPeriod(mBeaconInterval - 3000);
-                mBeaconAPI.setScanPeriod(3000);
+                mBeaconAPI.setBetweenScanPeriod(mBeaconInterval - 2000);
+                mBeaconAPI.setScanPeriod(2000);
             }
         }
         if (mBeaconAPI != null) {
@@ -849,6 +935,7 @@ public class DemoIndoorActivity extends Activity {
         }
     }
 
+    //扫描到iBeacon
     private BeaconListener mBeaconListener = new BeaconListener() {
         @Override
         public void onRefresh(final List<SimpleBeacon> beacons) {

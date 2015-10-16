@@ -70,7 +70,7 @@
     <string name="default_locate_target">B0:8E:1A:50:3D:61</string>
     <string name="default_locate_update_interval">2000</string>
     <string name="default_locate_wifi_scan_interval">1000</string>
-    <string name="default_locate_beacon_scan_interval">3000</string>
+    <string name="default_locate_beacon_scan_interval">2000</string>
     <string name="default_locate_beacon_server">58.240.212.6</string>
     <string name="default_locate_beacon_port">10615</string>
     <string name="default_push_server">http://www.uradiosys.com:8092</string>

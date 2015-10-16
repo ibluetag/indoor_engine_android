@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.*;
 import android.widget.Toast;
 
+//配置菜单类
 public class DemoPreferenceActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
     private static final String TAG = "DemoPrefActivity";
