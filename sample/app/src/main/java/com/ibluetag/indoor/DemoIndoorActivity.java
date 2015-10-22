@@ -61,6 +61,7 @@ public class DemoIndoorActivity extends Activity {
     private long mCurrentFloorId = -1;
     private BitmapOverlay mBitmapOverlay1;
     private BitmapOverlay mBitmapOverlay2;
+    private PoiRoute mPoiRoute = new PoiRoute();
 
     //Beacon定位和WIFI定位的LocateAgent，
     //如果不需要WIFI定位mLocateAgent有关的代码都可以删除。
@@ -797,6 +798,11 @@ public class DemoIndoorActivity extends Activity {
                                         dialog.dismiss();
                                     }
                                 }).show();
+                return true;
+            case R.id.action_calc_route:
+                mPoiRoute.startPoi(6779);
+                mPoiRoute.endPoi(6780);
+                mPoiRoute.calc();
                 return true;
             default:
                 break;

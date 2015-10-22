@@ -13,4 +13,7 @@
     <item android:id="@+id/action_download_map"
           android:title="@string/action_download_map"
           android:orderInCategory="104"/>
+    <item android:id="@+id/action_calc_route"
+          android:title="@string/action_calc_route"
+          android:orderInCategory="105"/>
 </menu>

@@ -32,6 +32,7 @@
     <string name="action_add_overlay">添加覆盖物</string>
     <string name="action_remove_overlay">移除覆盖物</string>
     <string name="action_download_map">下载离线地图</string>
+    <string name="action_calc_route">测试添加路径</string>
 
     <string name="key_initial_area">indoor_initial_area</string>
     <string name="key_map_server">indoor_map_server</string>
