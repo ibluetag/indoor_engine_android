@@ -15,24 +15,31 @@ public class DemoPreferenceActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
     private static final String TAG = "DemoPrefActivity";
 
+    //map
     private EditTextPreference mMapServerEdit;
     private EditTextPreference mMapSubjectIdEdit;
     private ListPreference mMapLoadModeList;
     private EditTextPreference mMapLoadFloorIdEdit;
     private EditTextPreference mMapLoadInitialLabelEdit;
+
+    //locate
     private EditTextPreference mLocateUpdateIntervalEdit;
+
+    //wifi
     private EditTextPreference mLocateTargetEdit;
     private CheckBoxPreference mLocateWithPhoneCheck;
     private EditTextPreference mLocateWifiScanIntervalEdit;
-    private CheckBoxPreference mLocateBeaconDiscoveryCheck;
-    private EditTextPreference mLocateBeaconScanIntervalEdit;
-    private EditTextPreference mLocateBeaconServerEdit;
-    private EditTextPreference mLocateBeaconPortEdit;
+
+    //push
     private CheckBoxPreference mPushEnableCheck;
     private EditTextPreference mPushServerEdit;
+
+    //route
     private EditTextPreference mRouteAttachThresholdEdit;
     private EditTextPreference mRouteDeviateThresholdEdit;
     private ListPreference mRouteRuleList;
+
+    //cache
     private CheckBoxPreference mClearCacheCheck;
 
     private WifiManager mWifiManager;
@@ -96,23 +103,6 @@ public class DemoPreferenceActivity extends PreferenceActivity
         mLocateWifiScanIntervalEdit.setSummary(mLocateWifiScanIntervalEdit.getText());
         mLocateWifiScanIntervalEdit.setOnPreferenceChangeListener(this);
 
-        // beacon
-        mLocateBeaconDiscoveryCheck = (CheckBoxPreference) findPreference(
-                getString(R.string.key_locate_beacon_discovery));
-        mLocateBeaconDiscoveryCheck.setOnPreferenceChangeListener(this);
-        mLocateBeaconScanIntervalEdit = (EditTextPreference) findPreference(
-                getString(R.string.key_locate_beacon_scan_interval));
-        mLocateBeaconScanIntervalEdit.setSummary(mLocateBeaconScanIntervalEdit.getText());
-        mLocateBeaconScanIntervalEdit.setOnPreferenceChangeListener(this);
-        mLocateBeaconServerEdit = (EditTextPreference) findPreference(
-                getString(R.string.key_locate_beacon_server));
-        mLocateBeaconServerEdit.setSummary(mLocateBeaconServerEdit.getText());
-        mLocateBeaconServerEdit.setOnPreferenceChangeListener(this);
-        mLocateBeaconPortEdit = (EditTextPreference) findPreference(
-                getString(R.string.key_locate_beacon_port));
-        mLocateBeaconPortEdit.setSummary(mLocateBeaconPortEdit.getText());
-        mLocateBeaconPortEdit.setOnPreferenceChangeListener(this);
-
         // push
         mPushEnableCheck = (CheckBoxPreference) findPreference(
                 getString(R.string.key_push_enable));
@@ -143,6 +133,7 @@ public class DemoPreferenceActivity extends PreferenceActivity
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
+        //map
         if (preference.getKey().equals(getString(R.string.key_map_server))) {
             mMapServerEdit.setSummary((CharSequence) newValue);
             mClearCacheCheck.setChecked(!mLastMapServer.equalsIgnoreCase((String) newValue));
@@ -161,8 +152,10 @@ public class DemoPreferenceActivity extends PreferenceActivity
             mMapLoadFloorIdEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_map_load_initial_label))) {
             mMapLoadInitialLabelEdit.setSummary((CharSequence) newValue);
+        //locate
         } else if (preference.getKey().equals(getString(R.string.key_locate_update_interval))) {
             mLocateUpdateIntervalEdit.setSummary((CharSequence) newValue);
+        //wifi
         } else if (preference.getKey().equals(getString(R.string.key_locate_target))) {
             mLocateTargetEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_locate_with_phone))) {
@@ -172,44 +165,10 @@ public class DemoPreferenceActivity extends PreferenceActivity
             mLocateTargetEdit.setSummary(targetMac.toUpperCase());
         } else if (preference.getKey().equals(getString(R.string.key_locate_wifi_scan_interval))) {
             mLocateWifiScanIntervalEdit.setSummary((CharSequence) newValue);
-        } else if (preference.getKey().equals(getString(R.string.key_locate_beacon_discovery))) {
-            if ((Boolean) newValue) {
-                if (mBluetoothAdapter == null) {
-                    Toast.makeText(getApplicationContext(), R.string.toast_bluetooth_invalid,
-                            Toast.LENGTH_SHORT).show();
-                    return false;
-                } else if (!mBluetoothAdapter.isEnabled()) {
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.beacon_enable_bluetooth_title)
-                            .setMessage(R.string.beacon_enable_bluetooth_message)
-                            .setPositiveButton(R.string.btn_confirm,
-                                    new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent(
-                                            BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                    startActivity(intent);
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setNegativeButton(R.string.btn_cancel,
-                                    new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            }).show();
-                    return false;
-                }
-            }
-        } else if (preference.getKey().equals(getString(R.string.key_locate_beacon_scan_interval))) {
-            mLocateBeaconScanIntervalEdit.setSummary((CharSequence) newValue);
-        } else if (preference.getKey().equals(getString(R.string.key_locate_beacon_server))) {
-            mLocateBeaconServerEdit.setSummary((CharSequence) newValue);
-        } else if (preference.getKey().equals(getString(R.string.key_locate_beacon_port))) {
-            mLocateBeaconPortEdit.setSummary((CharSequence) newValue);
+        //push
         } else if (preference.getKey().equals(getString(R.string.key_push_server))) {
             mPushServerEdit.setSummary((CharSequence) newValue);
+        //route
         } else if (preference.getKey().equals(getString(R.string.key_route_attach_threshold))) {
             mRouteAttachThresholdEdit.setSummary((CharSequence) newValue);
         } else if (preference.getKey().equals(getString(R.string.key_route_deviate_threshold))) {

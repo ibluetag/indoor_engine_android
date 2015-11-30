@@ -23,9 +23,6 @@ import com.ibluetag.indoor.sdk.model.*;
 import com.ibluetag.indoor.sdk.IndoorMapView;
 import com.ibluetag.indoor.sdk.MapProxy;
 import com.ibluetag.loc.uradiosys.model.AreaInfo;
-import com.ibluetag.sdk.api.BeaconAPI;
-import com.ibluetag.sdk.api.BeaconListener;
-import com.ibluetag.sdk.model.SimpleBeacon;
 import com.squareup.picasso.Picasso;
 
 import java.util.*;
@@ -57,6 +54,8 @@ public class DemoIndoorActivity extends Activity {
     private Button mInfoDetailBtn;
 
     private IndoorMapView mIndoorMap;//室内地图的View
+    private BeaconGraph mBeaconGraph;//Beacon调试View
+    private boolean mBeaconGraphEnabled = false;
     private Building mCurrentBuilding;
     private long mCurrentFloorId = -1;
     private BitmapOverlay mBitmapOverlay1;
@@ -78,13 +77,9 @@ public class DemoIndoorActivity extends Activity {
     private boolean mIsWifiScanning = false;
     private AreaInfo mCurrentAreaInfo;
 
-    private BeaconAPI mBeaconAPI;//Beacon检测的底层API
-    private int mBeaconInterval = -1;
-
     private boolean mIsToastNotInBuildingRequired = true;
     private String mCurrentLoadMode;
     private long mInitialFloorId = -1;
-    private boolean mUseBeaconAgent = false;
 
     enum Area {
         SOUTH, NORTH, ALL,
@@ -119,8 +114,6 @@ public class DemoIndoorActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //停止底层的Beacon扫描
-        destroyBeaconScan();
         //停止WIFI扫描
         stopWifiScan();
         //去除网络状态更新的通知处理Receiver
@@ -210,28 +203,11 @@ public class DemoIndoorActivity extends Activity {
                         getString(R.string.key_locate_update_interval),
                         getString(R.string.default_locate_update_interval))));//获取WIFI定位位置的间隔
 
-        //配置Beacon定位Agent
-        mBeaconLocateAgent.setMapServer(mMapServerUrl);
-        mBeaconLocateAgent.setBeaconScanInterval(Integer.parseInt(
-                sp.getString(getString(R.string.key_locate_beacon_scan_interval),
-                        getString(R.string.default_locate_beacon_scan_interval))));//Beacon扫描时间
-
         //开始WIFI全频道扫描
         if (sp.getBoolean(getString(R.string.key_locate_with_phone), false)) {
             startWifiScan();
         } else {
             stopWifiScan();
-        }
-
-        //启动扫描Beacon，但这里的扫描Beacon的目的是为了向wifi定位引擎服务器报告，
-        //并不是为了Beacon定位。这个是wifi定位引擎的部分功能
-        if (sp.getBoolean(getString(R.string.key_locate_beacon_discovery), false)) {
-            mBeaconInterval = Integer.parseInt(
-                    sp.getString(getString(R.string.key_locate_beacon_scan_interval),
-                    getString(R.string.default_locate_beacon_scan_interval)));
-            enableBeaconScan(true);
-        } else {
-            enableBeaconScan(false);
         }
 
         //设置要定位的手机的MAC
@@ -251,9 +227,6 @@ public class DemoIndoorActivity extends Activity {
         mIndoorMap.getMapProxy().setRouteRule(Integer.parseInt(sp.getString(
                 getString(R.string.key_route_rule),
                 getString(R.string.default_route_rule))));
-        //平滑模式滑动定位位置，只在导航模式下面
-        mIndoorMap.getMapProxy().enableSmoothRoute(
-                sp.getBoolean(getString(R.string.key_smooth_route), false));
 
         //加载地图的模式设置
         mCurrentLoadMode = sp.getString(getString(R.string.key_map_load_mode),
@@ -429,6 +402,12 @@ public class DemoIndoorActivity extends Activity {
 
         //获得室内地图View：mIndoorMap
         mIndoorMap = (IndoorMapView) findViewById(R.id.indoor_map);
+
+        //初始化Beacon调试的Views
+        mBeaconGraph = (BeaconGraph) findViewById(R.id.indoor_map_graph);
+        mBeaconGraph.setMapProxy(mIndoorMap.getMapProxy());
+        mBeaconGraph.setBeaconLocator(mBeaconLocateAgent.getBeaconLocator());
+
         // 设置地图加载监听
         mIndoorMap.getMapProxy().setMapListener(new MapProxy.MapListener() {
             @Override
@@ -511,20 +490,12 @@ public class DemoIndoorActivity extends Activity {
                             getString(R.string.default_locate_server)));
                 }
 
-                String beaconServer = mIndoorMap.getMapProxy().getBeaconServer(floorId);
-                Log.v(TAG, "beaconServer: " + beaconServer);
-                if (beaconServer != null && !beaconServer.isEmpty()) {
-                    mLocateAgent.setBeaconServer(mIndoorMap.getMapProxy().getBeaconServer(floorId));
-                } else {
-                    Log.w(TAG, "no beacon server from map info");
-                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(
-                            getApplicationContext());
-                    mLocateAgent.setBeaconServer(
-                            sp.getString(getString(R.string.key_locate_beacon_server),
-                                    getString(R.string.default_locate_beacon_server)) + ":" +
-                            Integer.parseInt(sp.getString(getString(R.string.key_locate_beacon_port),
-                            getString(R.string.default_locate_beacon_port))));
-                }
+                //用于设置WIFI定位时，把额外辅助定位Beacons向服务器报告。目前不用
+                //String beaconServer = mIndoorMap.getMapProxy().getBeaconServer(floorId);
+                //Log.v(TAG, "beaconServer: " + beaconServer);
+                //if (beaconServer != null && !beaconServer.isEmpty()) {
+                //    mLocateAgent.setBeaconServer(mIndoorMap.getMapProxy().getBeaconServer(floorId));
+                //}
             }
         });
         // 设置导航监听
@@ -800,9 +771,32 @@ public class DemoIndoorActivity extends Activity {
                                 }).show();
                 return true;
             case R.id.action_calc_route:
-                mPoiRoute.startPoi(6779);
-                mPoiRoute.endPoi(6780);
+                //The start and end pois have to be in the current floor.
+                //mIndoorMap.getMapProxy().loadMapWithFloor(mMapSubjectId, 15);
+                //mPoiRoute.startPoi(682);
+                //mIndoorMap.getMapProxy().loadMapWithFloor(mMapSubjectId, 19);
+                //mPoiRoute.endPoi(1071);
+
+                //mPoiRoute.startPoi(6779);
+                //mPoiRoute.endPoi(6780);
+
+                mPoiRoute.startPosition(10, 10);
+                mPoiRoute.endPosition(200, 200);
+                Toast.makeText(this, "Routing two points...", Toast.LENGTH_SHORT).show();
+
                 mPoiRoute.calc();
+                return true;
+            case R.id.action_start_beacondbg:
+                startBeaconGraph();
+                return true;
+            case R.id.action_stop_beacondbg:
+                stopBeaconGraph();
+                return true;
+            case R.id.action_start_beaconrcd:
+                mBeaconLocateAgent.startBeaconRecord();
+                return true;
+            case R.id.action_stop_beaconrcd:
+                mBeaconLocateAgent.stopBeaconRecord();
                 return true;
             default:
                 break;
@@ -910,52 +904,32 @@ public class DemoIndoorActivity extends Activity {
         return builder.toString();
     }
 
-
-    //开启扫描iBeacon设备，并注册一个回调函数
-    private void enableBeaconScan(boolean enable) {
-        Log.v(TAG, "enableBeaconScan, " + enable);
-        if (enable && mBeaconAPI == null) {
-            mBeaconAPI = new BeaconAPI(this, getPackageName());
-            mBeaconAPI.setDetectRange(20);
-            mBeaconAPI.addBeaconListener(mBeaconListener);
-        }
-        if (enable) {
-            if (mBeaconInterval <= 2000) {
-                mBeaconAPI.setBetweenScanPeriod(0);
-                mBeaconAPI.setScanPeriod(mBeaconInterval);
-            } else {
-                mBeaconAPI.setBetweenScanPeriod(mBeaconInterval - 2000);
-                mBeaconAPI.setScanPeriod(2000);
-            }
-        }
-        if (mBeaconAPI != null) {
-            mBeaconAPI.enableDiscovery(enable);
-        }
+    //开启iBeacon调试BeaconGraph
+    public void startBeaconGraph() {
+        Log.v(TAG, "startBeaconGraph");
+        mBeaconLocateAgent.startBeaconGraph(mBeaconGraphRunnable);
+        mBeaconGraph.setVisibility(View.VISIBLE);
+        mBeaconGraphEnabled = true;
+        //mHandler.postDelayed(mBeaconGraphRunnable, 1200);
     }
 
-    private void destroyBeaconScan() {
-        if (mBeaconAPI != null) {
-            mBeaconAPI.enableDiscovery(false);
-            mBeaconAPI.removeBeaconListener(mBeaconListener);
-            mBeaconAPI.destroy();
-        }
+    private void stopBeaconGraph() {
+        Log.v(TAG, "stopBeaconGraph");
+        //mHandler.removeCallbacks(mBeaconGraphRunnable);
+        mBeaconLocateAgent.stopBeaconGraph();
+        mBeaconGraph.setVisibility(View.GONE);
+        mBeaconGraphEnabled = false;
     }
 
-    //扫描到iBeacon
-    private BeaconListener mBeaconListener = new BeaconListener() {
+    private Runnable mBeaconGraphRunnable = new Runnable() {
         @Override
-        public void onRefresh(final List<SimpleBeacon> beacons) {
-            if (beacons == null) {
-                return;
+        public void run() {
+            Log.v(TAG, "BeaconGraph logging");
+            if ((mBeaconGraph != null) && (mBeaconGraphEnabled == true)) {
+                mBeaconGraph.showAll();
             }
-            // report 10 beacons at most
-            List<SimpleBeacon> reportBeacons = beacons.size() > 10 ?
-                    beacons.subList(0, 10) : beacons;
-            mLocateAgent.reportDevice(
-                    getApplicationContext(),
-                    mTargetMac,
-                    mIndoorMap.getMapProxy().getDegree(),
-                    reportBeacons);
+            //mHandler.postDelayed(mBeaconGraphRunnable, 1200);
         }
     };
+
 }

@@ -33,6 +33,10 @@
     <string name="action_remove_overlay">移除覆盖物</string>
     <string name="action_download_map">下载离线地图</string>
     <string name="action_calc_route">测试添加路径</string>
+    <string name="action_start_beacondbg">打开iBeacon调试</string>
+    <string name="action_stop_beacondbg">关闭iBeacon调试</string>
+    <string name="action_start_beaconrcd">开始iBeacon记录</string>
+    <string name="action_stop_beaconrcd">停止iBeacon记录</string>
 
     <string name="key_initial_area">indoor_initial_area</string>
     <string name="key_map_server">indoor_map_server</string>
@@ -45,16 +49,11 @@
     <string name="key_locate_with_phone">indoor_locate_with_phone</string>
     <string name="key_locate_update_interval">indoor_locate_update_interval</string>
     <string name="key_locate_wifi_scan_interval">indoor_locate_wifi_scan_interval</string>
-    <string name="key_locate_beacon_discovery">indoor_locate_beacon_discovery</string>
-    <string name="key_locate_beacon_scan_interval">indoor_locate_beacon_scan_interval</string>
-    <string name="key_locate_beacon_server">indoor_locate_beacon_server</string>
-    <string name="key_locate_beacon_port">indoor_locate_beacon_server_port</string>
     <string name="key_push_enable">indoor_push_enable</string>
     <string name="key_push_server">indoor_push_server</string>
     <string name="key_route_attach_threshold">indoor_route_attach_threshold</string>
     <string name="key_route_deviate_threshold">indoor_route_deviate_threshold</string>
     <string name="key_route_rule">indoor_route_rule</string>
-    <string name="key_smooth_route">indoor_smooth_route</string>
     <string name="key_clear_cache">indoor_clear_cache</string>
 
     <string name="value_map_load_mode_subject">subject</string>
@@ -63,17 +62,14 @@
     <string name="value_map_load_mode_booth_route">route</string>
 
     <string name="default_map_server">http://a.imapview.com</string>
-    <string name="default_map_subject_id">1</string>
+    <string name="default_map_subject_id">6</string>
     <string name="default_map_load_mode">@string/value_map_load_mode_subject</string>
-    <string name="default_map_load_initial_floor_id">10</string>
-    <string name="default_map_load_initial_label">NC8032</string>
+    <string name="default_map_load_initial_floor_id">19</string>
+    <string name="default_map_load_initial_label">8063</string>
     <string name="default_locate_server">http://www.uradiosys.com:8065</string>
     <string name="default_locate_target">B0:8E:1A:50:3D:61</string>
     <string name="default_locate_update_interval">2000</string>
     <string name="default_locate_wifi_scan_interval">1000</string>
-    <string name="default_locate_beacon_scan_interval">2000</string>
-    <string name="default_locate_beacon_server">58.240.212.6</string>
-    <string name="default_locate_beacon_port">10615</string>
     <string name="default_push_server">http://www.uradiosys.com:8092</string>
     <string name="default_route_attach_threshold">5</string>
     <string name="default_route_deviate_threshold">10</string>
@@ -85,16 +81,12 @@
     <string name="pref_map_load_mode">地图加载模式</string>
     <string name="pref_map_load_initial_floor_id">指定楼层ID</string>
     <string name="pref_map_load_initial_label">指定POI(店铺/展台)标签</string>
-    <string name="pref_locate_title">定位设置</string>
+    <string name="pref_locate_title">WIFI定位设置</string>
     <string name="pref_locate_server">备用定位服务器（后台未配置时）</string>
     <string name="pref_locate_target">定位目标MAC</string>
     <string name="pref_locate_with_phone">定位本机</string>
     <string name="pref_locate_update_interval">定位获取间隔(ms)</string>
     <string name="pref_locate_wifi_scan_interval">WiFi扫描间隔(ms)</string>
-    <string name="pref_locate_beacon_discovery">开启Beacon发现</string>
-    <string name="pref_locate_beacon_scan_interval">Beacon扫描间隔(ms)</string>
-    <string name="pref_locate_beacon_server">备用Beacon服务器（后台未配置时）</string>
-    <string name="pref_locate_beacon_port">备用Beacon端口</string>
     <string name="pref_others_title">其它设置</string>
     <string name="pref_push_enable">开启推送</string>
     <string name="pref_push_server">推送服务器</string>

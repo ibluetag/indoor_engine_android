@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +14,17 @@ import com.ibluetag.indoor.sdk.location.Location;
 import com.ibluetag.indoor.sdk.location.LocationListener;
 import com.ibluetag.loc.beacon.api.BeaconLocator;
 import com.ibluetag.loc.beacon.model.TargetStatus;
+import com.ibluetag.sdk.api.BeaconAPI;
+import com.ibluetag.sdk.api.BeaconListener;
+import com.ibluetag.sdk.model.SimpleBeacon;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 //基于Beacon定位的LocateAgent（抽象类）
 //基于不同的定位技术可以实现不同的LocateAgent，Locategent获取位置，并把位置汇报给地图更新位置点
@@ -33,6 +45,7 @@ public class BeaconLocateAgent extends LocateAgent {
     private boolean mIsStarted = false;
     private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private static boolean sAvailable = false;
+    FileOutputStream mBeaconRecordStream;
 
     public BeaconLocateAgent(Context context, String uuid) {
         mContext = context;
@@ -56,7 +69,7 @@ public class BeaconLocateAgent extends LocateAgent {
         mBeaconLocator.setMapServer(serverUrl);
     }
 
-    //设置底层Beacon一次扫描发现的时间间隔，默认是2s
+    //设置底层Beacon一次扫描发现的时间间隔
     public void setBeaconScanInterval(int millis) {
         if (mBeaconLocator == null) {
             Log.w(TAG, "setBeaconScanInterval, BeaconLocator null...");
@@ -68,6 +81,11 @@ public class BeaconLocateAgent extends LocateAgent {
 
     public static boolean isAvailable() {
         return sAvailable;
+    }
+
+    //获取控制Beacon底层扫描的类
+    public BeaconLocator getBeaconLocator() {
+        return mBeaconLocator;
     }
 
     //判断是否当前地图存在Beacon定位功能：
@@ -100,7 +118,7 @@ public class BeaconLocateAgent extends LocateAgent {
     @Override
     public void start() {
         if (!mIsStarted) {
-            Log.v(TAG, "start");
+            Log.v(TAG, "start locate agent");
             if (mBluetoothAdapter == null) {
                 Toast.makeText(mContext, R.string.toast_bluetooth_invalid,
                         Toast.LENGTH_SHORT).show();
@@ -135,7 +153,7 @@ public class BeaconLocateAgent extends LocateAgent {
     @Override
     public void stop() {
         if (mIsStarted) {
-            Log.v(TAG, "stop");
+            Log.v(TAG, "stop locate agent");
             mBeaconLocator.stop();
             mBeaconLocator.unRegisterListener(mLocationListener);
             mIsStarted = false;
@@ -182,4 +200,108 @@ public class BeaconLocateAgent extends LocateAgent {
     public interface StatusListener {
         public void onResult(boolean available);
     }
+
+    /*
+    recording beacons to a file
+     */
+    //开启iBeacon设备纪录，注册一个回调函数来处理纪录
+    public void startBeaconRecord() {
+        Log.v(TAG, "startBeaconRecord ");
+        if (mBeaconLocator != null) {
+            if (mBeaconRecordStream == null) {
+                openBeaconRecordFile();//open file
+            }
+            mBeaconLocator.addBeaconListener(mBeaconRecordListener);
+        }
+    }
+
+    //停止纪录iBeacon设备
+    public void stopBeaconRecord() {
+        Log.v(TAG, "stopBeaconRecord ");
+        if (mBeaconLocator != null) {
+            mBeaconLocator.removeBeaconListener(mBeaconRecordListener);
+            if (mBeaconRecordStream != null) {
+                closeBeaconRecordFile();
+            }
+        }
+    }
+
+    //底层BeaconAPI扫描到iBeacon后会调用这个回调
+    private BeaconListener mBeaconRecordListener = new BeaconListener() {
+        @Override
+        public void onRefresh(final List<SimpleBeacon> beacons) {
+            recordBeacon2File(beacons);
+        }
+    };
+
+    private void openBeaconRecordFile() {
+        String path = Environment.getExternalStorageDirectory().getPath();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String filePath = path + "/imapview_" + timeStamp + ".txt";
+        File file = new File(filePath);
+        try {
+            mBeaconRecordStream = new FileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            mBeaconRecordStream = null;
+        }
+    }
+
+    private void closeBeaconRecordFile() {
+        if (mBeaconRecordStream != null) {
+            try {
+                mBeaconRecordStream.close();
+            } catch (IOException e) {
+                ;
+            }
+            mBeaconRecordStream = null;
+        }
+    }
+
+    private void recordBeacon2File(List<SimpleBeacon> beacons) {
+        if (mBeaconRecordStream != null) {
+            String timeStamp = "T:" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            timeStamp += "\r\n";
+            try {
+                mBeaconRecordStream.write(timeStamp.getBytes());
+                for (SimpleBeacon beacon : beacons) {
+                    String line = beacon.toString() + "\r\n";
+                    mBeaconRecordStream.write(line.getBytes());
+                }
+                mBeaconRecordStream.flush();
+            } catch (IOException e) {
+                Log.e(TAG, "write file error: mBeaconRecordStream");
+            }
+        }
+    }
+
+
+    /*
+    display beacons on BeaconGraph
+     */
+    Runnable mBeaconGraphRunnable = null;
+    public void startBeaconGraph(Runnable runnable) {
+        Log.v(TAG, "startBeaconGraph ");
+        if (mBeaconLocator != null) {
+            mBeaconLocator.addBeaconListener(mBeaconGraphListener);
+            mBeaconGraphRunnable = runnable;
+        }
+    }
+
+    public void stopBeaconGraph() {
+        Log.v(TAG, "stopBeaconGraph ");
+        if (mBeaconLocator != null) {
+            mBeaconLocator.removeBeaconListener(mBeaconGraphListener);
+            mBeaconGraphRunnable = null;
+        }
+    }
+
+    private BeaconListener mBeaconGraphListener = new BeaconListener() {
+        @Override
+        public void onRefresh(final List<SimpleBeacon> beacons) {
+            if (mBeaconGraphRunnable != null) {
+                mHandler.post(mBeaconGraphRunnable);
+            }
+        }
+    };
+
 }

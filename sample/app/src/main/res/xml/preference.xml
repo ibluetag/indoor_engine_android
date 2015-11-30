@@ -81,39 +81,6 @@
                             android:positiveButtonText="@string/btn_confirm"
                             android:negativeButtonText="@string/btn_cancel"/>
 
-        <CheckBoxPreference android:title="@string/pref_locate_beacon_discovery"
-                            android:key="@string/key_locate_beacon_discovery"
-                            android:defaultValue="false"/>
-
-        <EditTextPreference android:title="@string/pref_locate_beacon_scan_interval"
-                            android:key="@string/key_locate_beacon_scan_interval"
-                            android:dependency="@string/key_locate_beacon_discovery"
-                            android:numeric="integer"
-                            android:defaultValue="@string/default_locate_beacon_scan_interval"
-                            android:dialogTitle="@string/pref_locate_beacon_scan_interval"
-                            android:dialogIcon="@drawable/ic_beacon_settings"
-                            android:positiveButtonText="@string/btn_confirm"
-                            android:negativeButtonText="@string/btn_cancel"/>
-
-        <EditTextPreference android:title="@string/pref_locate_beacon_server"
-                            android:key="@string/key_locate_beacon_server"
-                            android:dependency="@string/key_locate_beacon_discovery"
-                            android:defaultValue="@string/default_locate_beacon_server"
-                            android:dialogTitle="@string/pref_locate_beacon_server"
-                            android:dialogIcon="@drawable/ic_beacon_settings"
-                            android:positiveButtonText="@string/btn_confirm"
-                            android:negativeButtonText="@string/btn_cancel"/>
-
-        <EditTextPreference android:title="@string/pref_locate_beacon_port"
-                            android:key="@string/key_locate_beacon_port"
-                            android:dependency="@string/key_locate_beacon_discovery"
-                            android:numeric="integer"
-                            android:defaultValue="@string/default_locate_beacon_port"
-                            android:dialogTitle="@string/pref_locate_beacon_port"
-                            android:dialogIcon="@drawable/ic_beacon_settings"
-                            android:positiveButtonText="@string/btn_confirm"
-                            android:negativeButtonText="@string/btn_cancel"/>
-
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_others_title"
@@ -157,11 +124,6 @@
                         android:dialogIcon="@drawable/ic_route_settings"
                         android:entries="@array/route_rule_entries"
                         android:entryValues="@array/route_rule_values"/>
-
-        <CheckBoxPreference android:title="@string/pref_smooth_route"
-                            android:summary="@string/pref_smooth_route_summary"
-                            android:key="@string/key_smooth_route"
-                            android:defaultValue="false"/>
 
         <CheckBoxPreference android:title="@string/pref_clear_cache"
                             android:summary="@string/pref_clear_cache_summary"
