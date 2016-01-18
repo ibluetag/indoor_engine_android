@@ -1,3 +1,6 @@
 sample-release.apk
 app-release.apk
 sample.iml
+sample/.idea/*
+sample/.gradle/*
+

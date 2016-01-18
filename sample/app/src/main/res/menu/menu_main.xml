@@ -16,16 +16,19 @@
     <item android:id="@+id/action_calc_route"
           android:title="@string/action_calc_route"
           android:orderInCategory="105"/>
+    <item android:id="@+id/action_clear_route"
+          android:title="@string/action_clear_route"
+          android:orderInCategory="106"/>
     <item android:id="@+id/action_start_beacondbg"
           android:title="@string/action_start_beacondbg"
-          android:orderInCategory="106"/>
+          android:orderInCategory="107"/>
     <item android:id="@+id/action_stop_beacondbg"
           android:title="@string/action_stop_beacondbg"
-          android:orderInCategory="107"/>
+          android:orderInCategory="108"/>
     <item android:id="@+id/action_start_beaconrcd"
         android:title="@string/action_start_beaconrcd"
-        android:orderInCategory="108"/>
+        android:orderInCategory="109"/>
     <item android:id="@+id/action_stop_beaconrcd"
         android:title="@string/action_stop_beaconrcd"
-        android:orderInCategory="109"/>
+        android:orderInCategory="110"/>
 </menu>

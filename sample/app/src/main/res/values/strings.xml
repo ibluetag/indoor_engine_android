@@ -15,8 +15,8 @@
     <string name="toast_map_download_start">主体#%1$s离线地图开始下载！</string>
     <string name="toast_map_download_success">主体#%1$s离线地图下载成功！</string>
     <string name="toast_map_download_failure">主体#%1$s离线地图下载失败！</string>
-    <string name="toast_map_search_success">地图中找到%1$s处相关内容！</string>
-    <string name="toast_map_search_failure">地图中未能找到相关内容！</string>
+    <string name="toast_map_search_success">当前地图中找到%1$s处相关内容！</string>
+    <string name="toast_map_search_failure">当前地图中未能找到相关内容！</string>
     <string name="toast_settings_invalid">地图配置参数无效！</string>
     <string name="toast_locate_not_in_building">不在当前建筑物内，定位取消...</string>
     <string name="toast_route_out_of_path">您已偏离导航，线路重新规划中...</string>
@@ -32,7 +32,8 @@
     <string name="action_add_overlay">添加覆盖物</string>
     <string name="action_remove_overlay">移除覆盖物</string>
     <string name="action_download_map">下载离线地图</string>
-    <string name="action_calc_route">测试添加路径</string>
+    <string name="action_calc_route">添加测试路径</string>
+    <string name="action_clear_route">移除测试路径</string>
     <string name="action_start_beacondbg">打开iBeacon调试</string>
     <string name="action_stop_beacondbg">关闭iBeacon调试</string>
     <string name="action_start_beaconrcd">开始iBeacon记录</string>

@@ -780,11 +780,16 @@ public class DemoIndoorActivity extends Activity {
                 //mPoiRoute.startPoi(6779);
                 //mPoiRoute.endPoi(6780);
 
+                int ms = (int)System.currentTimeMillis()%500;
                 mPoiRoute.startPosition(10, 10);
-                mPoiRoute.endPosition(200, 200);
-                Toast.makeText(this, "Routing two points...", Toast.LENGTH_SHORT).show();
+                mPoiRoute.endPosition(ms, 200);
+
 
                 mPoiRoute.calc();
+                return true;
+            case R.id.action_clear_route:
+                //clear the route
+                mPoiRoute.clear();
                 return true;
             case R.id.action_start_beacondbg:
                 startBeaconGraph();
