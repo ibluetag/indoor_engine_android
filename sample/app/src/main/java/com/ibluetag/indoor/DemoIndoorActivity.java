@@ -790,6 +790,19 @@ public class DemoIndoorActivity extends Activity {
             case R.id.action_clear_route:
                 //clear the route
                 mPoiRoute.clear();
+
+                //set angle bitmap
+                if (mPoiRoute.getLocationAngleBitmap()) {
+                    mPoiRoute.setLocationAngleBitmap(false);
+                    Toast.makeText(getApplicationContext(),
+                            "set angle to false",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    mPoiRoute.setLocationAngleBitmap(true);
+                    Toast.makeText(getApplicationContext(),
+                            "set angle to true",
+                            Toast.LENGTH_SHORT).show();
+                }
                 return true;
             case R.id.action_start_beacondbg:
                 startBeaconGraph();
